@@ -37,10 +37,12 @@ class PreinscripcionesExport implements FromCollection, WithHeadings, WithColumn
             'eMail',
             'Teléfono',
             'Fecha de nacimiento',
-            'Fecha de pago',
+            // 'Fecha de pago',
             'Categoría',
             'Género',
-            'Dorsal'
+            'Dorsal',
+            'Pago satisfecho',
+            'Pago total'
         ];
     }
 
@@ -85,10 +87,12 @@ class PreinscripcionesExport implements FromCollection, WithHeadings, WithColumn
             $correo,
             $telef,
             date('d-m-Y', strtotime($miembro->f_nacimiento)),
-            date('d-m-Y', strtotime($miembro->f_pago)),
+            // date('d-m-Y', strtotime($miembro->f_pago)),
             Miembro::categoriaEdad($miembro->f_nacimiento, Temporada::TActual()->temporada)->descripcion,
             $miembro->descripcion,
-            $miembro->dorsal
+            $miembro->dorsal,
+            $miembro->importe,
+            Miembro::categoriaEdad($miembro->f_nacimiento, Temporada::TActual()->temporada)->precio_inscripcion,
         ];
         }
 
@@ -96,7 +100,7 @@ class PreinscripcionesExport implements FromCollection, WithHeadings, WithColumn
     {
         return [
             'L' => NumberFormat::FORMAT_DATE_DDMMYYYY,
-            'M' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            // 'M' => NumberFormat::FORMAT_DATE_DDMMYYYY,
         ];
     }
 
@@ -109,8 +113,11 @@ class PreinscripcionesExport implements FromCollection, WithHeadings, WithColumn
                     ->join('tipospagos', 'tipospagos.id', '=', 'pagos.tipospago_id')
                     ->join('generos', 'genero_id', '=', 'generos.id')
                     ->where('tipospagos.descripcion','Preinscripcion')
+                    ->orWhere('tipospagos.descripcion','Inscripcion')
                     ->where('pagos.temporada_id', $temporada->id)
-                    ->select('miembros.nif', 'miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.f_nacimiento', 'miembros.domicilio', 'miembros.localidad', 'miembros.provincia', 'miembros.c_postal', 'miembros.responsable1_id', 'miembros.responsable2_id', 'miembros.dorsal', 'pagos.f_pago', 'generos.descripcion')->get();
+                    ->select('miembros.nif', 'miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.f_nacimiento', 'miembros.domicilio', 'miembros.localidad', 'miembros.provincia', 'miembros.c_postal', 'miembros.responsable1_id', 'miembros.responsable2_id', 'miembros.dorsal', 'generos.descripcion', DB::raw('SUM(pagos.importe) as importe'))
+                    ->groupBy('miembros.nif', 'miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.f_nacimiento', 'miembros.domicilio', 'miembros.localidad', 'miembros.provincia', 'miembros.c_postal', 'miembros.responsable1_id', 'miembros.responsable2_id', 'miembros.dorsal', 'generos.descripcion')->get();
+                    
 
         // dd($miembros);
         return $miembros;
