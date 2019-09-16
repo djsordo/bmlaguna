@@ -318,12 +318,39 @@ class Miembro extends Model
     public function preinscrito(){
         if (!is_null($this->pagos->where('temporada_id', Temporada::Tactual()->id))){
             foreach ($this->pagos as $pago){
-                if(!is_null($pago->tipospago->where('descripcion', 'Preinscripcion'))){
+                if(!is_null($pago->tipospago->whereIn('descripcion', ['Preinscripcion', 'Inscripcion']))){
                     return True;
                 }
             }
         }
         return False;
+    }
+
+    // Función que cuenta los inscritos de la temporada actual
+    static public function nInscritos(){
+        $miembros = Miembro::all();
+
+        $cuenta = 0;
+
+        foreach ($miembros as $miembro){
+            if ($miembro->preinscrito()){
+                $cuenta++;
+            }
+        }
+        return $cuenta;
+    }
+
+    // Función que devuelve los miembros inscritos.
+    static public function inscritos(){
+        $miembros = Miembro::all();
+        $clave = 0;
+        foreach ($miembros as $miembro){
+            if (!$miembro->preinscrito()){
+                $miembros->pull($clave);
+            }
+            $clave++;
+        }
+        return $miembros;
     }
 
     // esta función devuelve True si el miembro se ha probado ropa en la temporada actual

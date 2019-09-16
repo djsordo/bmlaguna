@@ -25,6 +25,8 @@ Route::resource('miembros', 'MiembroController');
 
 Route::resource('documentos', 'DocumentoController');
 
+Route::resource('reconocimientos', 'ReconocimientoController');
+
 Route::resource('pagos', 'PagoController');
 
 Route::resource('equipaciones', 'EquipacionController');

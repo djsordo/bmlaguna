@@ -60,6 +60,10 @@
                         <a href="/equipacioneMiembroTalla/{{$miembro->id}}/edit" class="btn-floating lime tooltipped" data-tooltip="Equipación"><i class="material-icons">local_grocery_store</i></a>
                     </div>
 
+                    <div class="col s1">
+                        <a href="/reconocimientos/{{$miembro->id}}" class="btn-floating yellow tooltipped" data-tooltip="Reconocimientos"><i class="material-icons">local_hospital</i></a>
+                    </div>
+
                     <div class="col s1 right">
                         <a href="/pdf-preinscripcion/{{$miembro->id}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Imprimir Preinscripcion"><i class="material-icons">print</i></a>
                     </div>

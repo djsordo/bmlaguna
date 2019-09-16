@@ -37,14 +37,18 @@ class HomeController extends Controller
         $categorias = Categoria::orderBy('orden')->get();
         $temporada = Temporada::actual();
         
-        $preinscritos = Miembro::whereNull('f_baja')
-                        ->join('pagos', 'miembros.id', '=', 'pagos.miembro_id')
-                        ->join('tipospagos', 'tipospagos.id', '=', 'pagos.tipospago_id')
-                        ->where('tipospagos.descripcion','Preinscripcion')
-                        ->where('pagos.temporada_id', $temporada->id)
-                        ->get();
+        // $preinscritos = Miembro::whereNull('f_baja')
+        //                 ->join('pagos', 'miembros.id', '=', 'pagos.miembro_id')
+        //                 ->join('tipospagos', 'tipospagos.id', '=', 'pagos.tipospago_id')
+        //                 ->where('tipospagos.descripcion','Preinscripcion')
+        //                 ->orWhere('tipospagos.descripcion', 'Inscripcion')
+        //                 ->where('pagos.temporada_id', $temporada->id)
+        //                 ->get();
 
-        $nPreinscritos = $preinscritos->count();
+        $preinscritos = Miembro::inscritos();
+        
+        //$nPreinscritos = $preinscritos->distinct()->count();
+        $nPreinscritos = Miembro::nInscritos();
 
         $nProbados = DB::table('equipacione_miembro_talla')
                      ->join('equipaciones', 'equipacione_id', '=', 'equipaciones.id')
