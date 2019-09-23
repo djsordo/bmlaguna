@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use BMLaguna\Miembro;
 use BMLaguna\Reconocimiento;
+use BMLaguna\Temporada;
 
 class ReconocimientoController extends Controller
 {
@@ -26,7 +27,9 @@ class ReconocimientoController extends Controller
      */
     public function create()
     {
-        //
+        
+
+        return view('reconocimientos.create');
     }
 
     /**
@@ -50,7 +53,9 @@ class ReconocimientoController extends Controller
     {
         //dd($request);
         $miembro = Miembro::find($id);
-        return view('reconocimientos.show', compact('miembro'));
+        $reconocimientos = Reconocimiento::where('miembro_id', $id)->where('temporada_id', Temporada::Tactual()->id);
+
+        return view('reconocimientos.show', compact('miembro', 'reconocimientos'));
     }
 
     /**

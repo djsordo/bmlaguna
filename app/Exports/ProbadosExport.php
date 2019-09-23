@@ -37,6 +37,8 @@ class ProbadosExport implements FromCollection, WithHeadings, WithColumnFormatti
 
         foreach ($temporada->equipaciones()->get() as $equipacion){
             array_push ($cabecera, $equipacion->descripcion);
+            array_push ($cabecera, 'Fecha de Prueba');
+            array_push ($cabecera, 'Fecha de Pedido');
         } 
 
         return $cabecera;
@@ -62,6 +64,22 @@ class ProbadosExport implements FromCollection, WithHeadings, WithColumnFormatti
             if (!is_null($equipsMiembro->find($equipacion->id))){
                 $talla = Talla::find($equipsMiembro->find($equipacion->id)->pivot->talla_id);
                 array_push($cuerpo, $talla->descripcion);
+                $f_prueba = $equipsMiembro->find($equipacion->id)->pivot->f_prueba;
+                $f_pedido = $equipsMiembro->find($equipacion->id)->pivot->f_pedido;
+                if (!is_null($f_prueba)){
+                    array_push($cuerpo, date('d-m-Y', strtotime($f_prueba)));    
+                }
+                else{
+                    array_push($cuerpo, $f_prueba);    
+                }
+                
+                if (!is_null($f_pedido)){
+                    array_push($cuerpo, date('d-m-Y', strtotime($f_pedido)));
+                }
+                else{
+                    array_push($cuerpo, $f_pedido);    
+                }
+                
             }
             else{
                 array_push($cuerpo, null);
@@ -75,6 +93,18 @@ class ProbadosExport implements FromCollection, WithHeadings, WithColumnFormatti
     {
         return [
             'D' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'J' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'K' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'M' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'N' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'P' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'Q' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'S' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'T' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'V' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'W' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'Y' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            'Z' => NumberFormat::FORMAT_DATE_DDMMYYYY,
         ];
     }
 
