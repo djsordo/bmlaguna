@@ -296,7 +296,7 @@ class Miembro extends Model
         for ($x = 1; $x<=$max; $x++){
             array_push($dorsales, $x);
         }
-
+/*
         if (!is_null($this->f_nacimiento)){
             $dorsCat = $this->categoria($tempAct->temporada)->dorsales($this->genero->descripcion);
             
@@ -310,7 +310,7 @@ class Miembro extends Model
 
             $dorsales = array_diff($dorsales,$dorsCat,$anteriores,$siguientes);
         }   
-
+*/
         return $dorsales;
     }
 

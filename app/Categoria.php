@@ -152,4 +152,12 @@ class Categoria extends Model
         // dd($miembros);
         return $miembros->values();
     }
+
+    // Esta función devuelve el rago de fechas de nacimiento de la categoría según la temporada.
+    public function rangoAnnos($temporada){
+        $annoPrimero = $temporada->temporada - ($this->edad + ($this->duracion -1));
+        $annoUltimo = $temporada->temporada - $this->edad;
+
+        return [$annoPrimero, $annoUltimo];
+    }
 }

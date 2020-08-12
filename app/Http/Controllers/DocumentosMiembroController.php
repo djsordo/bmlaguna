@@ -48,7 +48,7 @@ class DocumentosMiembroController extends Controller
             $fichero = $request->file('ruta');
             $extension = $fichero->extension();
 
-            $nombreArchivo = time().'_'.$documento->subTipo.'_'.$miembro->id.'_'.$miembro->nombre.'_'.$miembro->apellido1.'_'.$miembro->apellido2.'.'.$extension;
+            $nombreArchivo = str_replace(' ', '_', eliminar_tildes(time().'_'.$documento->subTipo.'_'.$miembro->id.'_'.$miembro->nombre.'_'.$miembro->apellido1.'_'.$miembro->apellido2.'.'.$extension));
             $fichero->move(public_path().'/docs/', $nombreArchivo);
             
             if ($request->f_caducidad != ''){
