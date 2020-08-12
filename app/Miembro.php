@@ -5,6 +5,7 @@ namespace BMLaguna;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 
 use BMLaguna\Funcione;
 use BMLaguna\Genero;
@@ -17,6 +18,7 @@ use BMLaguna\Pago;
 use BMLaguna\Temporada;
 use BMLaguna\Equipacione;
 use BMLaguna\Talla;
+use BMLaguna\Preinscripcion;
 
 
 class Miembro extends Model
@@ -36,7 +38,7 @@ class Miembro extends Model
     }
 
     public function funciones(){
-        return $this->belongsToMany('BMLaguna\Funcione', 'equipo_funcione_miembro', 'miembro_id', 'funcione_id')->withPivot('equipo_id');
+        return $this->belongsToMany('BMLaguna\Funcione', 'equipo_funcione_miembro', 'miembro_id', 'funcione_id')->withPivot('equipo_id')->orderBy('pivot_equipo_id', 'DESC');
     }
 
     public function equipos(){
@@ -45,6 +47,10 @@ class Miembro extends Model
 
     public function equipaciones(){
         return $this->belongsToMany('BMLaguna\Equipacione', 'equipacione_miembro_talla', 'miembro_id', 'equipacione_id')->withPivot('talla_id', 'f_prueba', 'f_entrega', 'f_pedido', 'f_llegada', 'f_envioseri', 'f_llegadaseri');
+    }
+
+    public function preinscripciones(){
+        return $this->hasMany('BMLaguna\Preinscripcion');
     }
 
     public function equiposPorTemp(){
@@ -83,9 +89,11 @@ class Miembro extends Model
         $categorias = Categoria::all();
         foreach ($categorias as $categoria){
             if (($this->edadTemp($temporada) >= $categoria->edad) && ($this->edadTemp($temporada) < ($categoria->edad + $categoria->duracion)) ){
+                
                 return $categoria;
             }
         }
+        
         return new Categoria;
     }
 
@@ -195,14 +203,14 @@ class Miembro extends Model
                                  orWhere('responsable2_id', $this->id)->
                                  get();
                 foreach($resps as $resp){
-                    array_push($cadena, '<strong>' . ucfirst($funcion->descripcion) . '</strong> de  ' .
+                    array_push($cadena, '<em>' . ucfirst($funcion->descripcion) . '</em> de  ' .
                     '<a href="/miembros/' . $resp->id . '">' . 
                     $resp->nombre . ' ' . $resp->apellido1 . ' ' . $resp->apellido2 . 
                     '</a>'); 
                 }
             }
             else{
-                array_push($cadena, '<strong>' . ucfirst($funcion->descripcion) . '</strong> del equipo ' . 
+                array_push($cadena, '<em>' . ucfirst($funcion->descripcion) . '</em> del equipo ' . 
                 '<a href="/equipos/' . $equipo{'id'} . '">' .
                 $equipo{'nombre'} . '</a> de la categoría ' . 
                 $categoria{'descripcion'} . ' ' . 
@@ -316,14 +324,15 @@ class Miembro extends Model
 
     // esta función devuelve True si el miembro ha pagado la preinscripción en la temporada actual
     public function preinscrito(){
-        if (!is_null($this->pagos->where('temporada_id', Temporada::Tactual()->id))){
-            foreach ($this->pagos as $pago){
-                if(!is_null($pago->tipospago->whereIn('descripcion', ['Preinscripcion', 'Inscripcion']))){
-                    return True;
-                }
-            }
+        $preinscripcion = Tipospago::where('descripcion', 'Preinscripcion')->first();
+        $pago = $this->pagos->where('temporada_id', Temporada::Tactual()->id)
+                            ->where('tipospago_id', $preinscripcion->id)->first();
+
+        if (is_null($pago)){
+            return False;
         }
-        return False;
+
+        return True;
     }
 
     // Función que cuenta los inscritos de la temporada actual
@@ -386,6 +395,169 @@ class Miembro extends Model
         
         return 'caducado';        
  
+    }
+
+    // Esta función crea un nuevo miembro dada una preinscripción ya pagada.
+    static function nuevo(Preinscripcion $preinscripcion){
+        $miembro = new Miembro;
+
+        // Datos generales
+        $miembro->nombre = $preinscripcion->nombre;
+        $miembro->apellido1 = $preinscripcion->apellido1;
+        $miembro->apellido2 = $preinscripcion->apellido2;
+        $miembro->f_nacimiento = $preinscripcion->f_nacimiento;
+        $miembro->genero_id = $preinscripcion->genero_id;
+        $miembro->nif = $preinscripcion->nif;
+        $miembro->domicilio = $preinscripcion->domicilio;
+        $miembro->localidad = $preinscripcion->localidad;
+        $miembro->provincia = $preinscripcion->provincia;
+        $miembro->c_postal = $preinscripcion->c_postal;
+        $miembro->socio = $preinscripcion->socio;
+        $miembro->centroEducativo = $preinscripcion->centroEducativo;
+
+        $miembro->save();
+
+        // responsables
+
+        // R1
+        if (!is_null($preinscripcion->nombreR1) && !is_null($preinscripcion->apellido1R1)){
+            // Ver si existe en la BD
+            $resp = Miembro::where('nombre', $preinscripcion->nombreR1)->
+                    where('apellido1', $preinscripcion->apellido1R1)->
+                    where('apellido2', $preinscripcion->apellido2R1)->first();
+                
+            if (!is_null($resp)){
+                $miembro->responsable1_id = $resp->id;
+            }
+            else{
+                // Nuevo miembro
+                $r1['nombre'] = $preinscripcion->nombreR1;
+                $r1['apellido1'] = $preinscripcion->apellido1R1;
+                $r1['apellido2'] = $preinscripcion->apellido2R1;
+                $r1['domicilio'] = $preinscripcion->domicilio;
+                $r1['c_postal']  = $preinscripcion->c_postal;
+                $r1['provincia'] = $preinscripcion->provincia;
+                $r1['localidad'] = $preinscripcion->localidad;
+
+                $miembro->responsable1_id = $miembro->guardaResponsable($r1);
+
+                // Poner la función de familiar.
+                $responsable1= Miembro::find($miembro->responsable1_id);
+
+                $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');  
+                if ($responsable1->funciones()->where('descripcion', 'familiar')->count() == 0){
+                    $responsable1->funciones()->attach($funcione_id, ['equipo_id' => null]);
+                }
+            }
+        }
+
+        // 
+        if (!is_null($preinscripcion->nombreR2) && !is_null($preinscripcion->apellido1R2)){
+            // Ver si existe en la BD
+            $resp2 = Miembro::where('nombre', $preinscripcion->nombreR2)->
+                    where('apellido1', $preinscripcion->apellido1R2)->
+                    where('apellido2', $preinscripcion->apellido2R2)->first();
+                
+            if (!is_null($resp2)){
+                $miembro->responsable2_id = $resp2->id;
+            }
+            else{
+                // Nuevo miembro
+                $r2['nombre'] = $preinscripcion->nombreR2;
+                $r2['apellido1'] = $preinscripcion->apellido1R2;
+                $r2['apellido2'] = $preinscripcion->apellido2R2;
+                $r2['domicilio'] = $preinscripcion->domicilio;
+                $r2['c_postal']  = $preinscripcion->c_postal;
+                $r2['provincia'] = $preinscripcion->provincia;
+                $r2['localidad'] = $preinscripcion->localidad;
+
+                $miembro->responsable2_id = $miembro->guardaResponsable($r2);
+
+                // Poner la función de familiar.
+                $responsable2= Miembro::find($miembro->responsable2_id);
+
+                $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');  
+                if ($responsable2->funciones()->where('descripcion', 'familiar')->count() == 0){
+                    $responsable2->funciones()->attach($funcione_id, ['equipo_id' => null]);
+                }
+            }
+        }
+
+        // teléfono
+        if (!is_null($preinscripcion->telefono)){
+            $telefono = $miembro->telefonos()->create([
+                'telefono' => $preinscripcion->telefono,
+                'descripcion' => ''
+            ]);
+        }
+
+        // email
+        if (!is_null($preinscripcion->email)){
+            $email = $miembro->emails()->create([
+                'email' => $preinscripcion->email,
+                'descripcion' => ''
+            ]);
+        }
+
+        $miembro->save();
+
+        //dd($miembro->id);
+        return $miembro;
+    }
+
+    /* Devuelve los equipos en los que ha estado como jugador o entrenador, delegado en la temporada */
+    public function equipoTemp($tempSel){
+        $retorno = collect([]);
         
+        foreach ($this->funciones as $funcion){
+            $equipo = Equipo::find($funcion->pivot->equipo_id);
+            $categoria = Categoria::find($equipo{'categoria_id'});
+            $genero = Genero::find($equipo{'genero_id'});
+            $temporada = Temporada::find($equipo{'temporada_id'});
+            
+            if (($funcion->descripcion != 'familiar') && ($temporada->id == $tempSel->id))  {
+                $retorno->push([ 'equipo'=>$equipo->nombre,
+                                 'categoria'=>$categoria->descripcion,
+                                 'genero'=>$genero->descripcion,
+                                 'funcion'=>$funcion->descripcion]);
+            }
+        }
+        /* dd($retorno); */
+        return $retorno;
+    }
+
+    /* Devuelve la preinscripcion de la temporada */
+    public function preinscripcionTemp($temporada){
+        return $this->preinscripciones->where('temporada_id', $temporada->id);
+    }
+
+    /* devuelve lo pagado durante la temporada y lo que debe pagar */
+    public function pagosTemp($temporada){
+        /* Se pone el total a pagar sólo si se ha preinscrito */
+        $totalAPagar = 0;
+        //dd($this->preinscripcionTemp($temporada)->first());
+        if (!is_null($this->preinscripcionTemp($temporada)->first())){
+            /* Se mira la categoría */
+            $totalAPagar = $this->categoria($temporada->temporada)->precio_inscripcion;
+        }
+        return [$this->pagos->where('temporada_id', $temporada->id)->sum('importe'), $totalAPagar];
+
+    }
+
+    /* devuelve el importe de lo pagado en una temporada */
+    /* NO ESTÁ PROBADA */
+    public function pagado($temporada){
+            return Pago::where('miembro_id', $this->id)->where('temporada_id', $temporada->id)->sum('importe');
+        }
+    
+    /* devuelve el importe de lo que tiene que pagar en una temporada */
+    public function aPagar($temporada){
+        //dd($temporada->temporada);
+        return $this->categoria($temporada->temporada)->precio_inscripcion;
+    }
+
+    /* Devuelve la lista de pagos deun mienbro por temporada */
+    public function listaPagos($temporada){
+        return $this->pagos->where('temporada_id', $temporada->id);
     }
 }

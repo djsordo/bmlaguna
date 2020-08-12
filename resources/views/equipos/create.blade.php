@@ -6,8 +6,8 @@
 
 @include('common.errors')
 
-<div class="col s12 m8">
-        <div class="section container">
+
+        <div class="section">
             <div class="row">
                 <form method="POST" action="/equipos" class="col s12">
                     @csrf
@@ -48,8 +48,8 @@
                 </form>
             </div>
         </div>
-    </div>
-</div>
+    
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

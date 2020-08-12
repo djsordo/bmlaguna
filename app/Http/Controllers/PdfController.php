@@ -3,13 +3,14 @@
 namespace BMLaguna\Http\Controllers;
 
 Use BMLaguna\Miembro;
+use BMLaguna\Preinscripcion;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
 
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade as PDF;
-// use Barryvdh\DomPDF\PDF;
+
 
 class PdfController extends Controller
 {
@@ -39,4 +40,18 @@ class PdfController extends Controller
         return $pdf->download('equipacion.pdf');
     }
 
+    public function preinscripcionPagada(Preinscripcion $preinscripcion){
+        
+        // 1.- Sacar datos de la preinscripcion
+        //$preinscripcion = Preinscripcion::find($id);
+        
+        $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
+        
+        return $pdf->download('preinscripcion-'.$preinscripcion->nPreinscripcion.'.pdf');
+    }
+
+    public function imprimirRecibo($preinscripcion){
+        $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
+        return $pdf->download('Recibo.pdf');
+    }
 }

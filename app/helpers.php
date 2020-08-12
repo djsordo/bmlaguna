@@ -1,4 +1,6 @@
 <?php
+use \BMLaguna\Categoria;
+
 if (! function_exists('eliminar_tildes')){
     function eliminar_tildes($cadena){
 
@@ -39,5 +41,19 @@ if (! function_exists('eliminar_tildes')){
         );
     
         return $cadena;
+    }
+}
+
+if (! function_exists('mostrar_categoria')){
+    function mostrar_categoria($f_nacimiento, $temporada){
+        $categorias = Categoria::all();
+        $edadTemp = $temporada - date('Y', strtotime($f_nacimiento));
+
+        foreach ($categorias as $categoria){
+            if (($edadTemp >= $categoria->edad) && ($edadTemp < ($categoria->edad + $categoria->duracion)) ){
+                return $categoria;
+            }
+        }
+        return new Categoria;
     }
 }

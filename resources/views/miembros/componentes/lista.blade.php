@@ -1,5 +1,4 @@
 @foreach ($miembros as $miembro)
-<div class="col s12">
     <div class="card-panel blue lighten-5">
         <div class="row">
             <div class="col s12">
@@ -64,9 +63,17 @@
                         <a href="/reconocimientos/{{$miembro->id}}" class="btn-floating yellow tooltipped" data-tooltip="Reconocimientos"><i class="material-icons">local_hospital</i></a>
                     </div>
 
-                    <div class="col s1 right">
-                        <a href="/pdf-preinscripcion/{{$miembro->id}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Imprimir Preinscripcion"><i class="material-icons">print</i></a>
-                    </div>
+                    @if (!$miembro->preinscrito())
+                        <div class="col s1 right">
+                            <a href="{{route ('preins-oficina', [$miembro->id])}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Preinscripcion en la oficina"><i class="material-icons">business</i></a>
+                            
+                        </div>
+
+                        <div class="col s1 right">
+                            <a href="{{route ('preinsAntiguos', [$miembro->id])}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Enviar Preinscripcion"><i class="material-icons">local_post_office</i></a>
+                            
+                        </div>
+                    @endif
 
                     <div class="col s1 right">
                         <a href="/pdf-equipacion/{{$miembro->id}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Imprimir Equipacion"><i class="material-icons">print</i></a>
@@ -84,7 +91,6 @@
             </div>
         </div>
     </div>
-</div>
 @endforeach
 {{-- {!! $miembros->links() !!} --}}
 

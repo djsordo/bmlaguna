@@ -10,11 +10,32 @@ use BMLaguna\Exports\ProbadosPrendaExport;
 use BMLaguna\Exports\EstadoDNIExport;
 
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
 
 class ExcelController extends Controller
 {
-    public function exportMiembros(){
-        return Excel::download(new MiembrosExport, 'miembros.xlsx');
+    public function exportMiembros(Request $request){
+        //dd(array_keys($request->all()));
+        $criterios = [
+            'temporada_id' => $request->input('excelTemp_id'),
+            'categoria_id' => $request->input('excelCat_id'),
+            'genero_id' => $request->input('excelGen_id'),
+            'nombre' => $request->input('excelNombre'),
+        ];
+
+        $camposAux =  array_keys($request->all());
+
+        $campos= [];
+        $i = 0;
+        foreach ($camposAux as $campo){
+            //dd(strpos($campo, 'check'));
+            if (Str::startsWith($campo, 'check')){
+                $campos[$i] = $campo;
+                $i++;
+            }
+        }
+/* dd($campos); */
+        return Excel::download(new MiembrosExport($criterios, $campos), 'miembros.xlsx');
     }
 
     public function exportPreinscripciones(){

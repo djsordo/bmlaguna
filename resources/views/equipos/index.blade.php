@@ -4,15 +4,12 @@
 
 @include('common.success')
 
-<div class="col s12 m8">
+
     <div class="section">
         <div class="row">
             <div class="section valign-wrapper">
                 <div class="col s7">
                     <span><h2>Lista de Equipos</h2></span>
-                </div>
-                <div class="col s2">
-                    <a href="{{ route('equipos.create') }}" class="btn-floating red waves-effect"><i class="material-icons">add</i></a> 
                 </div>
                 <div class="col s3">
                     <form id="tempForm">
@@ -28,7 +25,7 @@
                 </div>
             </div>
 
-            <div class="section">
+            <div>
                 <ul class="collection z-depth-3">
                     @foreach($categorias as $categoria)
                         @if ($categoria->equipos->where('temporada_id', $tempActual_id)->count() != 0)
@@ -49,7 +46,10 @@
                                                   
                                                         <div>{{ $equipo->jugadores->count()}} jugadores</div>
                                                         <div>{{ $equipo->oficiales->count()}} técnicos</div>
-                                                        <a href="/equipos/{{$equipo->id}}/edit" class="secondary-content"><i class="material-icons green-text">edit</i></a>
+                                                        <div class="secondary-content">
+                                                            <a href="/equipos/{{$equipo->id}}/edit"><i class="material-icons green-text">edit</i></a>
+                                                            <a href="{{route ('preinsEquipo', [$equipo->id])}}"><i class="material-icons green-text">local_post_office</i></a>
+                                                        </div>
                                                     </li>
                                                 </div>
                                                 <div class="col s1">
@@ -105,7 +105,7 @@
                 </div> --}}
             </div>
         </div>
-    </div>
+    
 
     <script>
 

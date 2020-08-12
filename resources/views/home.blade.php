@@ -1,16 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="section row">
+    <div class="col s12 center">
+        <img src="/images/FotoBMLaguna.jpg" width="100%" alt="Balonmano Laguna" class="responsive-img z-depth-2">
+    </div>
+</div>
 
-    <div class="row center">
-        {{-- <div class="col s2">
+
+    {{-- <div class="row center">
+        <div class="col s2">
             <img src="https://i2.wp.com/www.balonmanolaguna.es/wp-content/uploads/2014/01/escudo-e1477594191944.png?resize=203%2C203" alt="Balonmano Laguna" class="responsive-img">
-        </div> --}}
+        </div>
 
         <div class="col s12">
-            {{-- <div class="flow-text"> Conectado como {{ Auth::user()->name }}</div> --}}
+            <div class="flow-text"> Conectado como {{ Auth::user()->name }}</div>
 
-            {{-- <div class="flow-text">Somos {{$nMiembros}} en el club</div> --}}
+            <div class="flow-text">Somos {{$nMiembros}} en el club</div>
             
             <div class="card col s8 l6 offset-s2 offset-l3">
                 <div class="card-image waves-effect waves-block waves-light">
@@ -73,7 +79,7 @@
                 </div>
             </div>
 
-            {{-- @foreach ($categorias as $categoria)
+            @foreach ($categorias as $categoria)
                 <div class="col s4">
                     <div class="card-content blue darken-1 white-text z-depth-2">
                         <p class="flow-text">{{ $categoria->descripcion }}</p>
@@ -81,9 +87,9 @@
                         <p class="flow-text">{{ $categoria->masculinos($temporada)->count() }} <i class="material-icons">wc</i> {{ $categoria->femeninos($temporada)->count() }} </p>
                     </div>
                 </div>
-            @endforeach --}}
+            @endforeach
         </div>
-    </div>
+    </div> --}}
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

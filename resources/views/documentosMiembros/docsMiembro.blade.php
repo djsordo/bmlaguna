@@ -63,71 +63,71 @@
         </div>
     </div>
 
-        @foreach ($miembro->fotos as $foto)
-                <div class="card row">
-                    <div class="col s2">
-                        <img class="materialboxed" width="100px" src="{{'/docs/'.$foto->pivot->ruta}}">
-                    </div>
-                    <div class="col s8">
-                        <p class="flow-text">{{$foto->descripcion}}</p>
-                        <p>Fecha de Entrega: {{date('d-m-Y', strtotime($foto->pivot->f_entrega))}}</p>
-                        @if ($miembro->fotos->find(1)->pivot->f_entrega == $foto->pivot->f_entrega)
-                            <p>ACTUAL</p>
-                        @endif
-                    </div>
-                    <div class="col s2">
-                        {{-- {{$foto->pivot->id}} --}}
-                        <form action="/documentosMiembros/{{$miembro->id}}-{{$foto->pivot->id}}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn-floating black right"><i class="material-icons">delete</i></button>   
-                        </form>
-                    </div>
-                </div>
-        @endforeach
+    @foreach ($miembro->fotos as $foto)
+        <div class="card row">
+            <div class="col s2">
+                <img class="materialboxed" width="100px" src="{{'/docs/'.$foto->pivot->ruta}}">
+            </div>
 
-        @foreach ($miembro->documentos as $documento)
-            @if ($documento->descripcion != 'foto')
+            <div class="col s8">
+                <p class="flow-text">{{$foto->descripcion}}</p>
+                <p>Fecha de Entrega: {{date('d-m-Y', strtotime($foto->pivot->f_entrega))}}</p>
+                @if ($miembro->fotos->find(1)->pivot->f_entrega == $foto->pivot->f_entrega)
+                    <p>ACTUAL</p>
+                @endif
+            </div>
+
+            <div class="col s2">
+                <form action="/documentosMiembros/{{$miembro->id}}-{{$foto->pivot->id}}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-floating black right"><i class="material-icons">delete</i></button>   
+                </form>
+            </div>
+        </div>
+    @endforeach
+
+    @foreach ($miembro->documentos as $documento)
+        @if ($documento->descripcion != 'foto')
             <div class="card row valign-wrapper">
-                    <div class="col s2">
-                        @if (ends_with($documento->pivot->ruta, '.pdf') == False)
-                            <img class="materialboxed" width="100px" src="{{'/docs/'.$documento->pivot->ruta}}">
-                        @else
-                            <a target="_blank" href="{{'/docs/'.$documento->pivot->ruta}}"><img width="100px" src="/images/pdf.png"></a>
-                        @endif
-                    </div>
-                    <div class="col s6">
-                        <p class="flow-text">{{$documento->descripcion}}</p>
-                        <p>Fecha de Entrega: {{date('d-m-Y', strtotime($documento->pivot->f_entrega))}}</br>
-                            @if (isset($documento->pivot->f_caducidad)) 
-                                Fecha de Caducidad: {{date('d-m-Y', strtotime($documento->pivot->f_caducidad))}}
-                            @endif
-                        </p>
-                        @if (isset($documento->pivot->f_caducidad)) 
-                            @if ($documento->pivot->f_caducidad >= date('Y-m-d'))
-                                <p>ACTIVO</p>
-                            @else
-                                <p>CADUCADO</p>
-                            @endif
-                        @endif
-                    </div>
-                    
-                    <div class="col s2">
-                        
-                    </div>
-
-                    <div class="col s2">
-                        {{-- {{$documento->pivot->id}} --}}
-                        <form action="/documentosMiembros/{{$miembro->id}}-{{$documento->pivot->id}}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn-floating black right"><i class="material-icons">delete</i></button>   
-                        </form>
-                    </div>
-                    </div>
+                <div class="col s2">
+                    @if (ends_with($documento->pivot->ruta, '.pdf') == False)
+                        <img class="materialboxed" width="100px" src="{{'/docs/'.$documento->pivot->ruta}}">
+                    @else
+                        <a target="_blank" href="{{'/docs/'.$documento->pivot->ruta}}"><img width="100px" src="/images/pdf.png"></a>
+                    @endif
                 </div>
-            @endif
-        @endforeach
+
+                <div class="col s6">
+                    <p class="flow-text">{{$documento->descripcion}}</p>
+                    <p>Fecha de Entrega: {{date('d-m-Y', strtotime($documento->pivot->f_entrega))}}</br>
+                        @if (isset($documento->pivot->f_caducidad)) 
+                            Fecha de Caducidad: {{date('d-m-Y', strtotime($documento->pivot->f_caducidad))}}
+                        @endif
+                    </p>
+                    @if (isset($documento->pivot->f_caducidad)) 
+                        @if ($documento->pivot->f_caducidad >= date('Y-m-d'))
+                            <p>ACTIVO</p>
+                        @else
+                            <p>CADUCADO</p>
+                        @endif
+                    @endif
+                </div>
+                    
+                <div class="col s2">
+                    
+                </div>
+
+                <div class="col s2">
+                    <form action="/documentosMiembros/{{$miembro->id}}-{{$documento->pivot->id}}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-floating black right"><i class="material-icons">delete</i></button>   
+                    </form>
+                </div>
+            </div>
+        @endif
+    @endforeach
 </div>
 
 <script>

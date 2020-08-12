@@ -11,9 +11,9 @@
         <div class="col s10">
                 <span><h4>Lista de categorías</h4></span>
         </div>
-        <div class="col s2">
+{{--         <div class="col s2">
                 <a href="{{ route('categorias.create') }}" class="btn-floating red waves-effect right"><i class="material-icons">add</i></a> 
-        </div>
+        </div> --}}
     </div>
         @foreach($categorias as $categoria)
             <div class="col s12 m12 l6">

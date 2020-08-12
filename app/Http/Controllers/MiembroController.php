@@ -12,6 +12,8 @@ use BMLaguna\Telefono;
 use BMLaguna\Email;
 use BMLaguna\Temporada;
 use BMLaguna\Equipacione;
+use BMLaguna\Categoria;
+
 
 use BMLaguna\Http\Requests\StoreMiembroRequest;
 use BMLaguna\Http\Requests\UpdateMiembroRequest;
@@ -25,15 +27,76 @@ class MiembroController extends Controller
      */
     public function index(Request $request)
     {
+        // Lista de temporadas
+        $temporadas = Temporada::all()->sortBy('temporada');
+        $tempActual_id = $request->get('temporada_id');
 
-        $miembros = Miembro::nombre($request->get('nombreBusqueda'))->whereNull('f_baja')->paginate(10);
+        if (is_null($tempActual_id)){
+            $tempElegida = Temporada::Tactual();
+        }
+        else{
+            $tempElegida = Temporada::find($tempActual_id);
+        }
+
+        // Lista de categorias
+        $categorias = Categoria::all()->sortBy('orden');
+        $catActual_id = $request->get('categoria_id');
+
+        // Lista de generos
+        $generos = Genero::all()->sortBy('descripcion');
+        $genActual_id = $request->get('genero_id');
+
+        // nombre
+        $nombreBusqueda = $request->get('nombreBusqueda');
+
+        // Criterios
+        $miembros = Miembro::whereNull('f_baja');
+
+        //Temporada
+        if (!is_null($tempActual_id)){
+            $miembros = $miembros->join('equipo_funcione_miembro', 'miembros.id', '=', 'equipo_funcione_miembro.miembro_id')->
+                            join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')->
+                            where('equipos.temporada_id', $tempActual_id)->
+                            select('miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.dorsal');
+        }
+
+        // Categoria
+        if (!is_null($catActual_id)){
+            $catElegida = Categoria::find($catActual_id);
+
+            $miembros = $miembros->whereYear('f_nacimiento','>=', $catElegida->rangoAnnos($tempElegida)[0])->
+                                whereYear('f_nacimiento','<=', $catElegida->rangoAnnos($tempElegida)[1]);
+        }
+
+        // Género
+        if (!is_null($genActual_id)){
+            $miembros = $miembros->where('miembros.genero_id', $genActual_id);
+        }
+
+        // Nombre
+        if (!is_null($nombreBusqueda)){
+            $miembros = $miembros->where(DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"), "like",  "%$nombreBusqueda%");
+        }
+
+        $miembros = $miembros->
+                    groupBy('miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.dorsal')->
+                    paginate(10);
+        /* $miembros = $miembros->paginate(10);         */
 
         $vista = $request->get('vista');
 
         $textoBusqueda = $request->get('nombreBusqueda');
-        $path = $request->url().'?nombreBusqueda='.$textoBusqueda;
+        $path = $request->url().'?temporada_id='.$tempActual_id.'&categoria_id='.$catActual_id.'&genero_id='.$genActual_id.'&nombreBusqueda='.$nombreBusqueda;
         
-        return view('miembros.index', compact('miembros', 'path', 'textoBusqueda', 'vista'));
+        if (!is_null($vista)){
+            $path = $path.'&vista='.$vista;
+        }
+     //dd($miembros);   
+        return view('miembros.index', compact('miembros', 'path', 'textoBusqueda', 'vista', 
+                    'temporadas', 'tempActual_id', 
+                    'categorias', 'catActual_id',
+                    'generos', 'genActual_id',
+                    'nombreBusqueda'));
     }
 
     /**
@@ -51,8 +114,8 @@ class MiembroController extends Controller
         // array_push($dorsales, $miembro->dorsal);
         // $dorsales = array_merge($dorsales, $miembro->dorsales());
 
-        $dorsales = array();
-
+        $dorsales = range(1,99);
+        
         return view('miembros.create', compact('funciones', 'generos', 'responsables', 'dorsales'));
     }
 
@@ -85,6 +148,12 @@ class MiembroController extends Controller
         $miembro->c_postal = $request->input('c_postal');
         $miembro->provincia = $request->input('provincia');
         $miembro->localidad = $request->input('localidad');
+
+        $miembro->dorsal = $request->input('dorsal');
+        $miembro->nSocio = $request->input('nSocio');
+        $miembro->centroEducativo = $request->input('centroEducativo');
+        $miembro->observaciones = $request->input('observaciones');
+        $miembro->obserMedicas = $request->input('obserMedicas');
 
         // Añadir miembros responsables
         if ( is_null($request->input('responsable1_id')) && !is_null($request->input('r1')['nombre']) ){

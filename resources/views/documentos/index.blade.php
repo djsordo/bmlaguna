@@ -4,7 +4,7 @@
 
 @include('common.success')
 
-<div class="col s12 m8">
+
     <div class="section row">
 
         <div class="col s10 center">
@@ -34,6 +34,6 @@
             </tbody>
         </table>
     </div>
-</div>
+
 
 @endsection

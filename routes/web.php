@@ -49,6 +49,8 @@ Route::get('/equipos', 'EquipoController@index')->name('equipos');
 
 Route::get('/miembros', 'MiembroController@index')->name('miembros');
 
+Route::get('/pagos', 'PagoController@index')->name('pagos');
+
 Route::get('/equipaciones', 'EquipacionController@index')->name('equipaciones');
 
 Route::get('/documentos', 'DocumentoController@index')->name('documentos');
@@ -74,3 +76,21 @@ Route::get('/export-estadoDNI', 'ExcelController@exportEstadoDNI');
 Route::get('/pdf-preinscripcion/{miembro_id}', 'PdfController@preinscripcion');
 
 Route::get('/pdf-equipacion/{miembro_id}', 'PdfController@equipacion');
+
+Route::resource('mail', 'MailController');
+Route::get('/preinsAntiguos/{id}', 'MailController@preinsAntiguos')->name('preinsAntiguos');
+Route::get('/preinsEquipo/{id}', 'MailController@preinsEquipo')->name('preinsEquipo');
+
+Route::resource('preinscripciones', 'PreinscripcionController');
+
+Route::get('/preinscripciones', 'PreinscripcionController@index')->name('preinscripciones');
+Route::post('/preinscripcionOficina', 'PreinscripcionController@oficinaStore');
+
+Route::get('/preinscripciones/{preinscripcion}/pagado', 'PreinscripcionController@pagado')->name('pagado');
+Route::get('/preinscripciones/{preinscripcion}/deshacerPago', 'PreinscripcionController@deshacerPago')->name('deshacerPago');
+
+Route::get('/pdf-preinscripcionPagada/{preinscripcion}', 'PdfController@preinscripcionPagada')->name('pdf-preinscripcionPagada');
+
+Route::get('crear-preins/{miembro_id}', ['as' => 'crear-preins', 'uses' => 'PreinscripcionController@create']);
+
+Route::get('preins-oficina/{miembro}', ['as' => 'preins-oficina', 'uses' => 'PreinscripcionController@preinsOficinaCreate']);

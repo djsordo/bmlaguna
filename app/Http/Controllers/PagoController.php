@@ -4,12 +4,18 @@ namespace BMLaguna\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\DB;
 
 use BMLaguna\Temporada;
 use BMLaguna\Tipospago;
 use BMLaguna\Pago;
 use BMLaguna\Miembro;
 use BMLaguna\Funcione;
+use BMLaguna\Categoria;
+use BMLaguna\Genero;
+use BMLaguna\Equipo;
+
+use stdClass;
 
 class PagoController extends Controller
 {
@@ -18,9 +24,91 @@ class PagoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        // Lista de temporadas
+        $temporadas = Temporada::all();
+        if ($request->get('temporada_id') == '') {
+            $tempActual_id = Temporada::actual()->id;
+        }
+        else{
+            $tempActual_id = $request->get('temporada_id');
+        }
+
+        $tempActual = Temporada::Tactual();
+        $tempElegida = Temporada::find($tempActual_id);
+
+        // Lista de equipos de la temporada elegida
+        $equipos = Equipo::where('temporada_id',$tempActual_id)->get();
+        if ($request->get('equipo_id') == '') {
+            $equipoActual_id = null;
+        }
+        else{
+            $equipoActual_id = $request->get('equipo_id');
+        }
+        $equipoElegido = Equipo::find($equipoActual_id);
+
+        // Lista de géneros
+        $generos = Genero::all();
+        if ($request->get('genero_id') == '') {
+            $genActual_id = null;
+        }
+        else{
+            $genActual_id = $request->get('genero_id');
+        }
+        $genElegido = Genero::find($genActual_id);
+
+        // Búsqueda por nombre
+        $textoBusqueda = $request->input('nombre');
+
+        // Query de la búsqueda
+
+        // Temporada
+        $pagos = Pago::where('pagos.temporada_id', $tempActual_id)/* ->orderBy('f_pago') */;
+
+        // Equipo
+        $nJugadores = null;
+        $totalAPagar = null;
+        $nombreEquipo = null;
+        if (!is_null($equipoActual_id)){
+            if ($equipoActual_id != '0'){
+                $pagos = $pagos->join('equipo_funcione_miembro', 'pagos.miembro_id', '=', 'equipo_funcione_miembro.miembro_id')->
+                                join('funciones', 'funciones.id', '=', 'equipo_funcione_miembro.funcione_id')-> 
+                                join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')->
+                                where('equipos.temporada_id', $tempActual_id)->
+                                where('equipo_funcione_miembro.equipo_id', $equipoActual_id)->
+                                where('funciones.descripcion', 'jugador');
+
+                $equipo = Equipo::find($equipoActual_id);
+                $nombreEquipo = $equipo->categoria->descripcion.'-'.$equipo->genero->descripcion.'-'.$equipo->nombre;
+                $nJugadores = $equipo->jugadores->count();
+                $totalAPagar = ($equipo->categoria->precio_inscripcion)*$nJugadores;
+            }
+            else{
+                $pagos = $pagos->whereNotExists(function ($query) use ($tempActual_id) {
+                    $query->select(DB::raw(1))
+                            ->from ('equipo_funcione_miembro')
+                            ->join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')
+                            ->whereRaw('pagos.miembro_id = equipo_funcione_miembro.miembro_id and equipos.temporada_id = ' . $tempActual_id);
+                });
+
+            }
+        }
+        
+        if (!is_null($textoBusqueda)){
+            $pagos = $pagos->join('miembros', 'miembros.id', '=', 'pagos.miembro_id')
+                           ->where(DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"), "like",  "%$textoBusqueda%");
+        }
+
+        $totalPagos = $pagos->sum('pagos.importe');
+
+        $pagos = $pagos->select('pagos.miembro_id', 'pagos.temporada_id')->groupBy('pagos.miembro_id', 'pagos.temporada_id');
+
+        $pagos = $pagos->paginate(10);
+
+        $path = $request->url().'?temporada_id='.$tempActual_id.'&nombre='.$textoBusqueda. '&equipo_id='.$equipoActual_id. '&genero_id='.$genActual_id;
+
+        return view('pagos.index', compact('pagos', 'totalPagos', 'nJugadores', 'totalAPagar', 'nombreEquipo', 'equipos', 'equipoActual_id', 'generos', 'genActual_id', 'temporadas', 'tempElegida', 'tempActual_id', 'textoBusqueda', 'path'));
     }
 
     /**

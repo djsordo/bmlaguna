@@ -29,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
         Blade::component('layouts.paginacion', 'paginacion'); 
         Blade::component('equipaciones.componentes.equipacionMant', 'equipacionMant');
         Blade::component('documentos.componentes.documentoMant', 'documentoMant');
+        Blade::component('layouts.menuLateral', 'menuLateral');
 
     }
 

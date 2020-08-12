@@ -4,7 +4,7 @@
 
 @include('common.errors')
 
-<div class="col s12">
+
     <div class="section">
         <div class="row">
             {{-- {{dd($tallasElegidas)}} --}}
@@ -18,7 +18,7 @@
             </form>
         </div>
     </div>
-</div>
+
 
 
 @endsection

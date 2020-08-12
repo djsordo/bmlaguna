@@ -6,8 +6,8 @@
 
 @include('common.errors')
 
-<div class="col s12 m8">
-        <div class="section container">
+
+        <div class="section">
             <div class="row">
                 <h4>Editar equipo</h4>
                 <form method="POST" action="/equipos/{{ $equipo->id }}" class="col s12">
@@ -50,8 +50,8 @@
                 </form>
             </div>
         </div>
-    </div>
-</div>
+   
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

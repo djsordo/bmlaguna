@@ -12,29 +12,45 @@
     <link type="text/css" rel="stylesheet" href="/css/materialize.min.css"  media="screen,projection"/>
     <link href="/css/material-icons.css" rel="stylesheet">
     <link href="/css/select2-materialize.css" rel="stylesheet">
-    
-    <!-- Scripts -->
-    {{-- <script src="{{ asset('js/app.js') }}" defer></script> --}}
-
-    <!-- Styles -->
-    {{-- <link href="{{ asset('css/app.css') }}" rel="stylesheet"> --}}
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+   
     <link href="/css/materialert.css" rel="stylesheet">
 
     
 </head>
-<body>
+
+<body class=" red lighten-5">
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/js/select2.min.js"></script>
     <script type="text/javascript" src="/js/select2-materialize.js"></script>
     <script type="text/javascript" src="/js/materialize.min.js"></script>
 
-    @barraPrincipal
-    @endbarraPrincipal
+    @empty ($quitaBarra)
+        @barraPrincipal
+        @endbarraPrincipal
+    @endempty
 
-    <main class="container">
-        @yield('content')
-    </main>
+    @auth
+        @menuLateral
+        @endmenuLateral
+    @endauth
+
+    <div class="row">
+        <div class="col s10 offset-s2 red lighten-5">
+            <main class="container">
+                @yield('content')
+            </main>
+        </div>
+    </div>
   
 </body>
+
 </html>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.sidenav');
+    var instances = M.Sidenav.init(elems, options);
+  });
+</script>

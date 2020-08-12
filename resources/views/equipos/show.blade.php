@@ -36,6 +36,7 @@
                                 {{ $jugador->categoriaTemp($equipo->temporada->temporada) }}
                             </p>
                             <span  class="secondary-content">
+                                <a href="/miembros/{{$jugador->id}}/edit" data-tooltip="Editar datos"><i class="material-icons black-text">edit</i></a>
                                 <a href="/miembros/{{$jugador->id}}"><i class="material-icons black-text">assignment</i></a>
                                 <a href="/equipos/{{$equipo->id}}/{{$jugador->id}}/{{ $jugador->jugadorEquipo->first()->descripcion }}/deasignar"><i class="material-icons teal-text">clear</i></a>
                             </span>
@@ -65,6 +66,7 @@
                         @endforeach
 
                         <span class="secondary-content">
+                            <a href="/miembros/{{$oficial->id}}/edit" data-tooltip="Editar datos"><i class="material-icons black-text">edit</i></a>
                             <a href="/miembros/{{$oficial->id}}"><i class="material-icons black-text">assignment</i></a>
                             <a href="/equipos/{{$equipo->id}}/{{$oficial->id}}/{{ $oficial->oficialEquipo($equipo->id)->first()->descripcion }}/deasignar"><i class="material-icons teal-text">clear</i></a>
                         </span>

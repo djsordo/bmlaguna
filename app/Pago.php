@@ -3,6 +3,7 @@
 namespace BMLaguna;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use BMLaguna\Tipospago;
 use BMLaguna\Miembro;
 use BMLaguna\Temporada;
@@ -22,4 +23,14 @@ class Pago extends Model
     public function temporada(){
         return $this->belongsTo('BMLaguna\Temporada');
     }
+
+    /* Esta función suma los pagos del miembro en la temporada */
+    public function sumPagado(){
+        //dd($this);
+        return DB::table('pagos')
+                ->where ('miembro_id', $this->miembro_id)
+                ->where ('temporada_id', $this->temporada_id)
+                ->sum('importe');
+    }
+
 }

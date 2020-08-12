@@ -3,7 +3,7 @@
 @section('content')
 @include('common.errors')
 
-<div class="col s12 m8">
+
     <div class="section row">
         <div class="col s12">
             <h2 class="center">Pagos de {{$miembro->nombre.' '.$miembro->apellido1.' '.$miembro->apellido2}}</h2>
@@ -78,7 +78,7 @@
         </table>
        
     </div>
-</div>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
