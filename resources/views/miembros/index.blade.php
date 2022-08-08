@@ -5,7 +5,9 @@
 @include('common.success')
 <div class="row">
 
-    @barraSuperior (['vista' => $vista, 'textoBusqueda' => $textoBusqueda, 
+    @barraSuperior (['vista' => $vista, 
+                    'baja' => $baja,
+                    'textoBusqueda' => $textoBusqueda, 
                     'temporadas' => $temporadas, 'tempActual_id' => $tempActual_id, 
                     'categorias' => $categorias, 'catActual_id' => $catActual_id, 
                     'generos' => $generos, 'genActual_id' => $genActual_id,

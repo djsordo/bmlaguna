@@ -23,7 +23,10 @@
                 <h1 class="center">{{ $miembro->nombre . ' ' . $miembro->apellido1 . ' ' . $miembro->apellido2 }}</h1>
             </div>
 
-            <div class="div col s12">
+            <div class="div col s6">
+                <span class="flow-text black-text">{{ $miembro->nomSerigrafia }}</span>
+            </div>
+            <div class="div col s6">
                 <span class="flow-text black-text">Número de socio: {{ $miembro->nSocio }}</span>
             </div>
         </div>
@@ -59,7 +62,7 @@
                             <div class="collapsible-header"><h5><i class="material-icons">person</i>Datos Personales</h5></div>
                             <div class="collapsible-body">
                                 <div class="row">
-                                
+
                                     <div class="div col s12 m4 l4">
                                         <label for="nombre">Nombre:</label><br>
                                         <span id="nombre" class="flow-text black-text">{{ $miembro->nombre }}</span>
@@ -72,7 +75,7 @@
                                         <label for="apellido2">Segundo apellido:</label><br>
                                         <span id="apellido2" class="flow-text black-text">{{ (!is_null($miembro->apellido2)) ? $miembro->apellido2 : ' - ' }}</span>
                                     </div>
-                                
+
                                     <div class="div col s12 m4 l4">
                                         <label for="nif">N.I.F. :</label><br>
                                         <span id="nif" class="flow-text black-text">{{ (!is_null($miembro->nif)) ? $miembro->nif : ' - ' }}</span>
@@ -97,7 +100,7 @@
                                         <label for="obserMedicas">Observaciones Medicas:</label><br>
                                         <span id="obserMedicas" class="flow-text black-text">{{ (!is_null($miembro->obserMedicas)) ? $miembro->obserMedicas : ' - ' }}</span>
                                     </div>
-                                </div>                                                          
+                                </div>
                             </div>
                         </li>
                     </ul>
@@ -121,7 +124,7 @@
                                         <label for="provincia">Provincia:</label><br>
                                         <span id="provincia" class="flow-text black-text"> {{ $miembro->provincia }} </span>
                                     </div>
-                                
+
                                     <div class="div col s12 m3 l3">
                                         <label for="c_postal">Código Postal:</label><br>
                                         <span id="c_postal" class="flow-text black-text"> {{ (!is_null($miembro->c_postal)) ? $miembro->c_postal : ' - '}} </span>
@@ -204,21 +207,21 @@
                                                 <tbody>
                                                     <tr>
                                                         <td></td>
-                                                        
+
                                                             @foreach ($equipaciones as $equipacion)
                                                             <td>
                                                                 @if (is_null($equipacion->rutaImagen))
-                                                                    <img width="40px" src="/images/sinfoto.jpg" id="foto" alt="">                                  
+                                                                    <img width="40px" src="/images/sinfoto.jpg" id="foto" alt="">
                                                                 @else
                                                                     <img width="40px" src="{{'/images/'.$equipacion->rutaImagen}}" id="foto" alt="">
                                                                 @endif
                                                             </td>
                                                             @endforeach
-                                                        
+
                                                     </tr>
                                                     <tr>
                                                         <td><strong>Talla</strong></td>
-                                                        
+
                                                             @foreach ($equipaciones as $equipacion)
                                                             <td>
                                                                 @if (!is_null($equipacionesMiembro->find($equipacion->id)))
@@ -226,11 +229,11 @@
                                                                 @endif
                                                             </td>
                                                             @endforeach
-                                                        
+
                                                     </tr>
                                                     <tr>
                                                         <td><strong>Fecha de Prueba</strong></td>
-                                                        
+
                                                             @foreach ($equipaciones as $equipacion)
                                                             <td>
                                                                 @if (!is_null($equipacionesMiembro->find($equipacion->id)))
@@ -240,11 +243,11 @@
                                                                 @endif
                                                             </td>
                                                             @endforeach
-                                                        
+
                                                     </tr>
                                                     <tr>
                                                         <td><strong>Fecha de Pedido</strong></td>
-                                                        
+
                                                             @foreach ($equipaciones as $equipacion)
                                                             <td>
                                                                 @if (!is_null($equipacionesMiembro->find($equipacion->id)))
@@ -254,11 +257,11 @@
                                                                 @endif
                                                             </td>
                                                             @endforeach
-                                                        
+
                                                     </tr>
                                                     <tr>
                                                         <td><strong>Fecha de Llegada</strong></td>
-                                                        
+
                                                             @foreach ($equipaciones as $equipacion)
                                                             <td>
                                                                 @if (!is_null($equipacionesMiembro->find($equipacion->id)))
@@ -268,11 +271,11 @@
                                                                 @endif
                                                             </td>
                                                             @endforeach
-                                                        
+
                                                     </tr>
                                                     <tr>
                                                         <td><strong>Fecha de Envío a serigrafía</strong></td>
-                                                        
+
                                                             @foreach ($equipaciones as $equipacion)
                                                             <td>
                                                                 @if (!is_null($equipacionesMiembro->find($equipacion->id)))
@@ -282,11 +285,11 @@
                                                                 @endif
                                                             </td>
                                                             @endforeach
-                                                        
+
                                                     </tr>
                                                     <tr>
                                                         <td><strong>Fecha de llegada de serigrafía</strong></td>
-                                                        
+
                                                             @foreach ($equipaciones as $equipacion)
                                                             <td>
                                                                 @if (!is_null($equipacionesMiembro->find($equipacion->id)))
@@ -296,7 +299,7 @@
                                                                 @endif
                                                             </td>
                                                             @endforeach
-                                                        
+
                                                     </tr>
                                                     <tr>
                                                         <td><strong>Fecha de Entrega</strong></td>
@@ -310,7 +313,7 @@
                                                         </td>
                                                         @endforeach
                                                     </tr>
-            
+
                                                 </tbody>
                                             </table>
                                         </div>

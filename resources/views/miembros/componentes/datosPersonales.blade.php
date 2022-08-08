@@ -4,9 +4,9 @@
         <div class="col s4">
             @if (!is_null($miembro))
                 @if (is_null($miembro->rutaFoto()))
-                    <img class="materialboxed" width="150px" src="/images/sinfoto.jpg" id="foto" alt="">                                  
+                    <img class="materialboxed" width="150px" src="/images/sinfoto.jpg" id="foto" alt="">
                 @else
-                    <img class="materialboxed" width="150px" src="{{'/docs/'.$miembro->rutaFoto()}}" id="foto" alt="">                                                
+                    <img class="materialboxed" width="150px" src="{{'/docs/'.$miembro->rutaFoto()}}" id="foto" alt="">
                 @endif
             @endif
         </div>
@@ -35,7 +35,7 @@
                 <option value="{{ $genero->id }}" @if (!is_null($miembro)) {{ ($genero->id == $miembro->genero_id) ? 'selected' : '' }} @endif >{{ $genero->descripcion }}</option>
             @endforeach
         </select>
-        
+
     </div>
 
     <div class="input-field col s4">
@@ -69,23 +69,22 @@
                 <option value="{{ $dorsal }}" @if (!is_null($miembro)) {{ ($dorsal == $miembro->dorsal) ? 'selected' : '' }} @endif >{{ $dorsal }}</option>
             @endforeach
         </select>
-        
     </div>
-    
+
     <div class="input-field col s6">
-        <textarea id="observaciones" name="observaciones" value="{{ (!is_null($miembro)) ? $miembro->observaciones : '' }}" class="materialize-textarea"></textarea>
+        <textarea id="observaciones" name="observaciones" class="materialize-textarea">{{ (!is_null($miembro)) ? $miembro->observaciones : '' }}</textarea>
         <label for="observaciones">Observaciones</label>
     </div>
 
     <div class="input-field col s6">
-        <textarea id="obserMedicas" name="obserMedicas" value="{{ (!is_null($miembro)) ? $miembro->obserMedicas : '' }}" class="materialize-textarea"></textarea>
+        <textarea id="obserMedicas" name="obserMedicas" class="materialize-textarea">{{ (!is_null($miembro)) ? $miembro->obserMedicas : '' }}</textarea>
         <label for="observaciones">Observaciones Médicas</label>
     </div>
 
-    {{-- <div class="input-field col s3 right">
-        <input type="text" class="datepicker validate" id="f_baja" name="f_baja" value="{{ (!is_null($miembro)) ? $miembro->f_baja : '' }}">
-        <label for="f_baja">Fecha de baja en el club:</label>
-    </div> --}}
+    <div class="input-field col s3 left">
+        <textarea id="nomSerigrafia" name="nomSerigrafia" class="materialize-textarea">{{ (!is_null($miembro)) ? $miembro->nomSerigrafia : '' }}</textarea>
+        <label for="nomSerigrafia">Nombre para la serigrafía</label>
+    </div>
 
     <div class="input-field col s3 right">
         <input type="date" id="f_baja" name="f_baja" placeholder="" value="{{ (!is_null($miembro)) ? $miembro->f_baja : '' }}">
@@ -104,22 +103,22 @@
 
     function archivoFoto(evt) {
         var files = evt.target.files; // FileList object
-       
-        //Obtenemos la imagen del campo "file". 
-        for (var i = 0, f; f = files[i]; i++) {         
+
+        //Obtenemos la imagen del campo "file".
+        for (var i = 0, f; f = files[i]; i++) {
             //Solo admitimos imágenes.
             if (!f.type.match('image.*')) {
                 continue;
             }
-       
+
             var reader = new FileReader();
-           
+
             reader.onload = (function(theFile) {
                 return function(e) {
                     document.getElementById('foto').src = e.target.result;
                 };
             })(f);
- 
+
            reader.readAsDataURL(f);
        }
     }
@@ -127,22 +126,22 @@
 
     function archivoDNIF(evt) {
         var files = evt.target.files; // FileList object
-       
-        //Obtenemos la imagen del campo "file". 
-        for (var i = 0, f; f = files[i]; i++) {         
+
+        //Obtenemos la imagen del campo "file".
+        for (var i = 0, f; f = files[i]; i++) {
             //Solo admitimos imágenes.
             if (!f.type.match('image.*')) {
                 continue;
             }
-       
+
             var reader = new FileReader();
-           
+
             reader.onload = (function(theFile) {
                 return function(e) {
                     document.getElementById('fotoDNIF').src = e.target.result;
                 };
             })(f);
- 
+
            reader.readAsDataURL(f);
        }
     }
@@ -150,22 +149,22 @@
 
     function archivoDNIP(evt) {
         var files = evt.target.files; // FileList object
-       
-        //Obtenemos la imagen del campo "file". 
-        for (var i = 0, f; f = files[i]; i++) {         
+
+        //Obtenemos la imagen del campo "file".
+        for (var i = 0, f; f = files[i]; i++) {
             //Solo admitimos imágenes.
             if (!f.type.match('image.*')) {
                 continue;
             }
-       
+
             var reader = new FileReader();
-           
+
             reader.onload = (function(theFile) {
                 return function(e) {
                     document.getElementById('fotoDNIP').src = e.target.result;
                 };
             })(f);
- 
+
            reader.readAsDataURL(f);
        }
     }

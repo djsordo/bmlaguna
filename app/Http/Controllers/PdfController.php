@@ -4,6 +4,11 @@ namespace BMLaguna\Http\Controllers;
 
 Use BMLaguna\Miembro;
 use BMLaguna\Preinscripcion;
+use BMLaguna\Temporada;
+use BMLaguna\Equipo;
+use BMLaguna\Categoria;
+use BMLaguna\Pago;
+
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -54,4 +59,63 @@ class PdfController extends Controller
         $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
         return $pdf->download('Recibo.pdf');
     }
+
+    public function certFedeReco(Miembro $miembro){
+        $tempActual = Temporada::Tactual();
+
+        $pdf = PDF::loadview('pdf.certFedeReco', compact('miembro', 'tempActual'))->setPaper('a4', 'portrait');
+
+        return $pdf->download('certFedeReco-'.$miembro->apellido1.$miembro->apellido2.$miembro->nombre.'.pdf');
+        
+    }
+
+    public function certFedeRecoEquipo(Equipo $equipo){
+        $tempActual = $equipo->temporada;
+        $zipFile = 'certsRecoEquipo.zip';
+        $path = 'certificados/';
+
+        $zip = new \ZipArchive();
+        $zip->open($zipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        //return dd($path);
+        foreach ($equipo->jugadores as $miembro){
+            $nombreFichero = 'certFedeReco-'.$miembro->apellido1.$miembro->apellido2.$miembro->nombre . '.pdf';
+            $pdf = PDF::loadview('pdf.certFedeReco', compact('miembro', 'tempActual'))->setPaper('a4', 'portrait');
+            $pdf->save($path . $nombreFichero);
+            $zip->addFile($path . $nombreFichero);
+            
+        }
+        $zip->close();
+
+        // Código para borrar los ficheros de un directorio
+        $files = glob($path . '*');
+        foreach($files as $file){
+            if(is_file($file)){
+                unlink($file);
+            }
+        }
+
+        return response()->download('./'.$zipFile);
+    }
+
+    public function reciboPago($pago_id, $cuota, $pagado){
+        $pago = Pago::find($pago_id);
+        $miembro = Miembro::find($pago->miembro_id);
+
+        //$formatterES = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);
+        //$importeLetra = $formatterES->format($pago->importe);
+
+        $pdf = PDF::loadview('pdf.reciboPago', compact('pago', 'miembro', 'cuota', 'pagado'))->setPaper('a5', 'landscape');
+        
+        return $pdf->download('recibo-'.$pago->nRecibo.'.pdf');
+    }
+
+    public function cuotas(Temporada $temporada){
+        //$miembro = Miembro::find($miembro_id);
+        $categorias = Categoria::orderBy('orden', 'ASC')->get();
+//dd($categorias);
+        $pdf = PDF::loadview('pdf.cuotas', compact('temporada', 'categorias'))->setPaper('a4', 'portrait');
+        
+        return $pdf->download('cuotas.pdf');
+    }
+
 }

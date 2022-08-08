@@ -15,8 +15,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
    
     <link href="/css/materialert.css" rel="stylesheet">
-
-    
+    <link href="/css/custom.css" rel="stylesheet">
 </head>
 
 <body class=" red lighten-5">
@@ -43,7 +42,26 @@
             </main>
         </div>
     </div>
-  
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.17.2/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyCZSTFr_13I99xxgEGRbx2qJ9NhI1Zbzwg",
+    authDomain: "bmlaguna-86522.firebaseapp.com",
+    databaseURL: "https://bmlaguna-86522.firebaseio.com",
+    projectId: "bmlaguna-86522",
+    storageBucket: "bmlaguna-86522.appspot.com",
+    messagingSenderId: "507596368891",
+    appId: "1:507596368891:web:c60ad3c9eaa341a683f95e"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>  
 </body>
 
 </html>

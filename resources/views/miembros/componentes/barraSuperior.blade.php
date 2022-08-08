@@ -15,7 +15,19 @@
 
         <div class="card col s12">
             <div class="card-content">
-                <span class="card-title">Criterios de búsqueda</span>
+                <span class="card-title">
+                    <div class="col s9">Criterios de búsqueda</div>
+                    <div class="col s3">
+                        <div class="switch">
+                            <label>
+                                Activos
+                                <input type="checkbox" name="baja" {{ $baja == 'on' ? 'checked' : '' }} onChange="this.form.submit()" />
+                                <span class="lever"></span>
+                                Baja
+                            </label>
+                        </div>
+                    </div>
+                </span>
                 <div class="input-field col s2">
                     <select name="temporada_id" id="tempSelect">
                         <option value="" {{ ($tempActual_id == "") ? 'selected' : ''}}>-- Todas --</option>
@@ -225,6 +237,12 @@
                                     <span class="black-text">Función dentro del equipo</span>
                                 </label>
                             </li>
+                            <li>
+                                <label>
+                                    <input type="checkbox" id="checkDorsal" name="checkDorsal"/>
+                                    <span class="black-text">Dorsal</span>
+                                </label>
+                            </li>
                         </ul>    
                     </li>
                         {{-- Fin Equipo --}}
@@ -275,7 +293,9 @@
             <input type="text" id="excelTemp_id" name="excelTemp_id" value="{{$tempActual_id}}" hidden>
             <input type="text" id="excelCat_id" name="excelCat_id" value="{{$catActual_id}}" hidden>
             <input type="text" id="excelGen_id" name="excelGen_id" value="{{$genActual_id}}" hidden>
+            <input type="text" id="excelEqui_id" name="excelEqui_id" value="{{null}}" hidden>
             <input type="text" id="excelNombre" name="excelNombre" autocomplete="off" value="{{$nombreBusqueda}}" hidden>
+            <input type="text" id="excelBaja" name="excelBaja" autocomplete="off" value="{{$baja}}" hidden>
             
         </form>
     </div>
@@ -408,10 +428,12 @@
         if (document.getElementById("checkEquipo").checked == false){
             document.getElementById("checkNomEquipo").checked = false;
             document.getElementById("checkFuncion").checked = false;
+            document.getElementById("checkDorsal").checked = false;
         }
         else{
             document.getElementById("checkNomEquipo").checked = true;
             document.getElementById("checkFuncion").checked = true;
+            document.getElementById("checkDorsal").checked = true;
         }
     };
 
@@ -502,6 +524,7 @@
         document.getElementById("checkEquipo").checked = true;
         document.getElementById("checkNomEquipo").checked = true;
         document.getElementById("checkFuncion").checked = true;
+        document.getElementById("checkDorsal").checked = true;
         /* Fin Equipo */
         /* Estado de la Preinscripcion */
         document.getElementById("checkPreinscripcion").checked = true;

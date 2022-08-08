@@ -15,6 +15,8 @@ use BMLaguna\Categoria;
 use BMLaguna\Genero;
 use BMLaguna\Equipo;
 
+use BMLaguna\Contador_recibo;
+
 use stdClass;
 
 class PagoController extends Controller
@@ -110,29 +112,38 @@ class PagoController extends Controller
 
         return view('pagos.index', compact('pagos', 'totalPagos', 'nJugadores', 'totalAPagar', 'nombreEquipo', 'equipos', 'equipoActual_id', 'generos', 'genActual_id', 'temporadas', 'tempElegida', 'tempActual_id', 'textoBusqueda', 'path'));
     }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
 
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function create($miembro_id)
+    public function miembroCreate($miembro_id)
     {
-        $temporadas = Temporada::all();
-        $tipospagos = Tipospago::all();
+        // $temporadas = Temporada::all();
+        // $tipospagos = Tipospago::all();
 
-        $tempAct = Temporada::orderBy('temporada', 'desc')->first();
+        // $tempAct = Temporada::orderBy('temporada', 'desc')->first();
 
-        // Pagos hechos por el miembro en la temporada actual
-        $pagos = Pago::where('miembro_id', $miembro_id)->
-                       where('temporada_id', $tempAct->id)->get();
+        // // Pagos hechos por el miembro en la temporada actual
+        // $pagos = Pago::where('miembro_id', $miembro_id)->
+        //                where('temporada_id', $tempAct->id)->get();
 
-        // Cuota anual que debe pagar
-        $miembro = Miembro::find($miembro_id);
+        // // Cuota anual que debe pagar
+        // $miembro = Miembro::find($miembro_id);
         
-        $cuota = $miembro->categoria($tempAct->temporada)->precio_inscripcion;
+        // $cuota = $miembro->categoria($tempAct->temporada)->precio_inscripcion;
 
-        return view('pagos.create', compact('miembro_id', 'temporadas', 'tipospagos', 'pagos', 'miembro', 'cuota', 'tempAct'));
+        // return view('pagos.create', compact('miembro_id', 'temporadas', 'tipospagos', 'pagos', 'miembro', 'cuota', 'tempAct'));
     }
 
     /**
@@ -143,18 +154,52 @@ class PagoController extends Controller
      */
     public function store(Request $request)
     {
-        $pago = new Pago();
+        // $pago = new Pago();
 
-        $pago->importe = $request->input('importe');
-        $pago->temporada_id = $request->input('temporada_id');
-        $pago->miembro_id = $request->input('miembro_id');
-        $pago->tipospago_id = $request->input('tipospago_id');
-        $pago->f_pago = date('Y-m-d', strtotime($request->input('f_pago')) );
+        // $pago->importe = $request->input('importe');
+        // $pago->temporada_id = $request->input('temporada_id');
+        // $pago->miembro_id = $request->input('miembro_id');
+        // $pago->tipospago_id = $request->input('tipospago_id');
+        // $pago->f_pago = date('Y-m-d', strtotime($request->input('f_pago')) );
+     
+        // $temporada = Temporada::find($pago->temporada_id);
+        // $pago->nRecibo = 'R'. $temporada->temporada.'-'.Contador_recibo::sumar($temporada);
 
-        $pago->save();
+        // $pago->save();
 
-        return redirect()->route('miembros')->with('status', 'Pago creado correctamente');
+        // $miembro_id = $pago->miembro_id;
+        // $temporadas = Temporada::all();
 
+        // if ($request->get('tempSelect_id') == '') {
+        //     // $tempActual_id = Temporada::actual()->id;
+        //     $tempAct = Temporada::orderBy('temporada', 'desc')->first();
+        // }
+        // else{
+        //     // $tempActual_id = $request->get('tempSelect_id');
+        //     $tempAct = Temporada::find($request->get('tempSelect_id'));
+        // }
+
+
+        // $tipospagos = Tipospago::all();
+
+        // // $tempAct = Temporada::orderBy('temporada', 'desc')->first();
+
+        // // Pagos hechos por el miembro en la temporada actual
+        // $pagos = Pago::where('miembro_id', $miembro_id)->
+        //                where('temporada_id', $tempAct->id)->get();
+
+        // // Cuota anual que debe pagar
+        // $miembro = Miembro::find($miembro_id);
+        
+        // $cuota = $miembro->categoria($tempAct->temporada)->precio_inscripcion;
+        // if (!is_null($pagos->first())){
+        //     $pagado = $pagos->first()->sumPagado();
+        // }
+        // else{
+        //     $pagado = 0;
+        // }
+
+        // return view('pagos.miembroIndex', compact('miembro_id', 'temporadas', 'tipospagos', 'pagos', 'miembro', 'cuota', 'pagado', 'tempAct'));
     }
 
     /**
@@ -201,4 +246,41 @@ class PagoController extends Controller
     {
         //
     }
+
+    public function miembroIndex($miembro_id, Request $request)
+    {
+        // $temporadas = Temporada::all();
+
+        // if ($request->get('tempSelect_id') == '') {
+        //     // $tempActual_id = Temporada::actual()->id;
+        //     $tempAct = Temporada::orderBy('temporada', 'desc')->first();
+        // }
+        // else{
+        //     // $tempActual_id = $request->get('tempSelect_id');
+        //     $tempAct = Temporada::find($request->get('tempSelect_id'));
+        // }
+
+
+        // $tipospagos = Tipospago::all();
+
+        // //$tempAct = Temporada::orderBy('temporada', 'desc')->first();
+
+        // // Pagos hechos por el miembro en la temporada actual
+        // $pagos = Pago::where('miembro_id', $miembro_id)->
+        //                where('temporada_id', $tempAct->id)->get();
+
+        // // Cuota anual que debe pagar
+        // $miembro = Miembro::find($miembro_id);
+        
+        // $cuota = $miembro->categoria($tempAct->temporada)->precio_inscripcion;
+        // if (!is_null($pagos->first())){
+        //     $pagado = $pagos->first()->sumPagado();
+        // }
+        // else{
+        //     $pagado = 0;
+        // }
+
+        // return view('pagos.miembroIndex', compact('miembro_id', 'temporadas', 'tipospagos', 'pagos', 'miembro', 'cuota', 'pagado', 'tempAct'));
+    }
+
 }

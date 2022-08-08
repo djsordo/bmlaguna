@@ -50,7 +50,15 @@ class MiembroController extends Controller
         $nombreBusqueda = $request->get('nombreBusqueda');
 
         // Criterios
-        $miembros = Miembro::whereNull('f_baja');
+        $baja = $request->get('baja');
+
+        if (!is_null($baja)){
+            // Miembros dados de baja
+            $miembros = Miembro::whereNotNull('f_baja');
+        }
+        else{
+            $miembros = Miembro::whereNull('f_baja');
+        }
 
         //Temporada
         if (!is_null($tempActual_id)){
@@ -86,14 +94,14 @@ class MiembroController extends Controller
         $vista = $request->get('vista');
 
         $textoBusqueda = $request->get('nombreBusqueda');
-        $path = $request->url().'?temporada_id='.$tempActual_id.'&categoria_id='.$catActual_id.'&genero_id='.$genActual_id.'&nombreBusqueda='.$nombreBusqueda;
-        
+        $path = $request->url().'?temporada_id='.$tempActual_id.'&categoria_id='.$catActual_id.'&genero_id='.$genActual_id.'&nombreBusqueda='.$nombreBusqueda.'&baja='.$baja;
+
         if (!is_null($vista)){
             $path = $path.'&vista='.$vista;
         }
-     //dd($miembros);   
-        return view('miembros.index', compact('miembros', 'path', 'textoBusqueda', 'vista', 
-                    'temporadas', 'tempActual_id', 
+     //dd($miembros);
+        return view('miembros.index', compact('miembros', 'path', 'textoBusqueda', 'vista', 'baja',
+                    'temporadas', 'tempActual_id',
                     'categorias', 'catActual_id',
                     'generos', 'genActual_id',
                     'nombreBusqueda'));
@@ -115,7 +123,7 @@ class MiembroController extends Controller
         // $dorsales = array_merge($dorsales, $miembro->dorsales());
 
         $dorsales = range(1,99);
-        
+
         return view('miembros.create', compact('funciones', 'generos', 'responsables', 'dorsales'));
     }
 
@@ -137,7 +145,7 @@ class MiembroController extends Controller
         if (!is_null($request->input('f_nacimiento'))){
             $miembro->f_nacimiento = date('Y-m-d', strtotime($request->input('f_nacimiento')) );
         }
- 
+
         if (!is_null($request->input('f_baja'))){
             $miembro->f_baja = date('Y-m-d', strtotime($request->input('f_baja')) );
         }
@@ -154,6 +162,7 @@ class MiembroController extends Controller
         $miembro->centroEducativo = $request->input('centroEducativo');
         $miembro->observaciones = $request->input('observaciones');
         $miembro->obserMedicas = $request->input('obserMedicas');
+        $miembro->nomSerigrafia = $request->input('nomSerigrafia');
 
         // Añadir miembros responsables
         if ( is_null($request->input('responsable1_id')) && !is_null($request->input('r1')['nombre']) ){
@@ -174,12 +183,12 @@ class MiembroController extends Controller
         }
 
         $miembro->save();
-       
+
         // Asignar función de familiar
         if (!is_null($miembro->responsable1_id)){
             $responsable1= Miembro::find($miembro->responsable1_id);
 
-            $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');  
+            $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');
             if ($responsable1->funciones()->where('descripcion', 'familiar')->count() == 0){
                 $responsable1->funciones()->attach($funcione_id, ['equipo_id' => null]);
             }
@@ -188,7 +197,7 @@ class MiembroController extends Controller
         if (!is_null($miembro->responsable2_id)){
             $responsable2= Miembro::find($miembro->responsable2_id);
 
-            $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');    
+            $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');
             if ($responsable2->funciones()->where('descripcion', 'familiar')->count() == 0){
                 $responsable2->funciones()->attach($funcione_id, ['equipo_id' => null]);
             }
@@ -269,7 +278,7 @@ class MiembroController extends Controller
         $resp1 = new Miembro;
         $resp2 = new Miembro;
         $temporada = Temporada::TActual();
-        
+
         if (!is_null($miembro->responsable1_id)){
             $resp1 = Miembro::find($miembro->responsable1_id);
         }
@@ -292,15 +301,16 @@ class MiembroController extends Controller
      */
     public function edit(Miembro $miembro)
     {
+        //dd($miembro);
         $funciones = Funcione::all();
 
         $responsables = Miembro::whereNull('f_nacimiento')->orWhere('f_nacimiento', '<', date('Y-m-d',strtotime(now()->subYears(18))) )->get();
-        
+
         $generos = Genero::where('descripcion', '!=', 'mixto')->get();
 
         $telefonos = Telefono::where('miembro_id', $miembro->id)->get();
         $emails = Email::where('miembro_id', $miembro->id)->get();
-        
+
         // if (!is_null($miembro->f_nacimiento)){
         //     $miembro->f_nacimiento = date('d/m/Y', strtotime($miembro->f_nacimiento));
         // }
@@ -312,7 +322,7 @@ class MiembroController extends Controller
         $dorsales = array();
         array_push($dorsales, $miembro->dorsal);
         $dorsales = array_merge($dorsales, $miembro->dorsales());
-        
+
         return view('miembros.edit', compact('funciones', 'generos', 'responsables', 'miembro', 'telefonos', 'emails', 'dorsales'));
     }
 
@@ -325,12 +335,18 @@ class MiembroController extends Controller
      */
     public function update(UpdateMiembroRequest $request, Miembro $miembro)
     {
+        // Sacamos la URL de donde venimos para poder regersar
+        $urlPrevia = $request->input('urlPrevia');
+//dd($request->all());
         //return $request->input('r1')['nombre'];
         $miembro->fill($request->all());
+        // $miembro->observaciones = $request->input('observaciones');
+        // $miembro->obserMedicas = $request->input('obserMedicas');
+
         if (!is_null($request->input('f_nacimiento'))){
             $miembro->f_nacimiento = date('Y-m-d', strtotime($request->input('f_nacimiento')) );
         }
-       
+
         if (!is_null($request->input('f_baja'))){
             $miembro->f_baja = date('Y-m-d', strtotime($request->input('f_baja')) );
         }
@@ -359,7 +375,7 @@ class MiembroController extends Controller
         if (!is_null($miembro->responsable1_id)){
             $responsable1= Miembro::find($miembro->responsable1_id);
 
-            $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');  
+            $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');
             if ($responsable1->funciones()->where('descripcion', 'familiar')->count() == 0){
                 $responsable1->funciones()->attach($funcione_id, ['equipo_id' => null]);
             }
@@ -368,13 +384,13 @@ class MiembroController extends Controller
         if (!is_null($miembro->responsable2_id)){
             $responsable2= Miembro::find($miembro->responsable2_id);
 
-            $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');    
+            $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');
 
             if ($responsable2->funciones()->where('descripcion', 'familiar')->count() == 0){
                 $responsable2->funciones()->attach($funcione_id, ['equipo_id' => null]);
             }
         }
-        
+
         // Foto
         $nombreArchivo ="";
          if ($request->hasFile('ruta')){
@@ -426,7 +442,7 @@ class MiembroController extends Controller
 
             }
         }
-        
+
         // Borramos los actuales emails
         DB::table('emails')->where('miembro_id', $miembro->id)->delete();
 
@@ -442,7 +458,9 @@ class MiembroController extends Controller
             }
         }
 
-        return redirect()->route('miembros')->with('status', 'Miembro actualizado correctamente');
+        // return redirect()->route('miembros')->with('status', 'Miembro actualizado correctamente');
+        // Redireccionamos a la URL anterior
+        return redirect($urlPrevia)->with('status', 'Miembro actualizado correctamente');
     }
 
     /**
@@ -459,11 +477,23 @@ class MiembroController extends Controller
     }
 
     public function equipacionesMiembro($miembro_id){
-        
+
         $miembro = Miembro::find($miembro_id);
         $equipaciones = Equipacione::where('temporada_id', Temporada::Tactual()->id)->get();
 
         return view('miembros.equipacionesMiembro', compact('miembro', 'equipaciones'));
     }
 
+    public function baja(Miembro $miembro){
+        // Se toma como fecha de baja la actual
+        $miembro->baja(date('Y-m-d'));
+
+        return redirect()->route('miembros')->with('status', 'Miembro dado de baja correctamente');
+    }
+
+    public function activar(Miembro $miembro){
+        $miembro->activacion();
+
+        return redirect()->route('miembros')->with('status', 'Miembro reactivado correctamente');
+    }
 }

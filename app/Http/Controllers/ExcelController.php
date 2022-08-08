@@ -16,11 +16,14 @@ class ExcelController extends Controller
 {
     public function exportMiembros(Request $request){
         //dd(array_keys($request->all()));
+        //dd($request->all());
         $criterios = [
             'temporada_id' => $request->input('excelTemp_id'),
             'categoria_id' => $request->input('excelCat_id'),
             'genero_id' => $request->input('excelGen_id'),
             'nombre' => $request->input('excelNombre'),
+            'baja' => $request->input('excelBaja'),
+            'equipo_id' => $request->input('excelEqui_id'),
         ];
 
         $camposAux =  array_keys($request->all());

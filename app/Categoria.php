@@ -160,4 +160,5 @@ class Categoria extends Model
 
         return [$annoPrimero, $annoUltimo];
     }
+
 }

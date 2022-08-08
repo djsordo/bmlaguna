@@ -49,7 +49,8 @@
                         <a href="/documentosMiembros/{{$miembro->id}}/docsMiembro" class="btn-floating indigo tooltipped" data-tooltip="Documentación"><i class="material-icons">photo_library</i></a>
                     </div>
                     <div class="col s1">
-                        <a href="{{route ('crear-pago', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a>
+                        {{-- <a href="{{route ('crear-pago', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a> --}}
+                        <a href="{{route ('pagosMiembro', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a>
                     </div>
 
                     <div class="col s1">
@@ -76,11 +77,20 @@
                         <a href="/pdf-equipacion/{{$miembro->id}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Imprimir Equipacion"><i class="material-icons">print</i></a>
                     </div> 
 
+                    <div class="col s12">
+                        <p class="flow-text">Historial</p>
+                        @for ($i=0; $i < count($miembro->funcionesMiembro()); $i++)
+                            <p>@if ($i == 0) <b> @endif {!! $miembro->funcionesMiembro()[$i] !!}@if ($i == 0) </b> @endif</p>
+                        @endfor
+                    </div>
+                    <div class="col s12 right-align">
+                        @if (!is_null($miembro->f_baja))
+                            <a href="{{route ('miembroActivar', $miembro)}}" class="black-text tooltipped" data-tooltip="Reactivar miembro"><i class="material-icons">published_with_changes</i></a>
+                        @else 
+                            <a href="{{route ('miembroBaja', $miembro)}}" class="black-text tooltipped" data-tooltip="Dar de baja miembro"><i class="material-icons">unpublished</i></a>
+                        @endif
+                    </div>
                 </div>
-                <p class="flow-text">Historial</p>
-                @for ($i=0; $i < count($miembro->funcionesMiembro()); $i++)
-                    <p>@if ($i == 0) <b> @endif {!! $miembro->funcionesMiembro()[$i] !!}@if ($i == 0) </b> @endif</p>
-                @endfor
             </div>
         </li>
     @endforeach

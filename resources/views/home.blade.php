@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+{{-- {{ Breadcrumbs::render('home') }} --}}
 <div class="section row">
     <div class="col s12 center">
         <img src="/images/FotoBMLaguna.jpg" width="100%" alt="Balonmano Laguna" class="responsive-img z-depth-2">

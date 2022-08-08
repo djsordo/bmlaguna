@@ -23,8 +23,8 @@ use BMLaguna\Preinscripcion;
 
 class Miembro extends Model
 {
-    protected $fillable = ['nombre', 'apellido1', 'apellido2', 'nif', 'f_nacimiento', 'genero_id', 'domicilio', 'c_postal', 'localidad', 'provincia', 'dorsal', 'socio', 'responsable2_id', 'responsable1_id', 'f_baja', 'centroEducativo', 'obserMedicas', 'observaciones', 'nSocio'];
- 
+    protected $fillable = ['nombre', 'apellido1', 'apellido2', 'nif', 'f_nacimiento', 'genero_id', 'domicilio', 'c_postal', 'localidad', 'provincia', 'dorsal', 'socio', 'responsable2_id', 'responsable1_id', 'f_baja', 'centroEducativo', 'obserMedicas', 'observaciones', 'nSocio', 'nomSerigrafia'];
+
     public function genero(){
         return $this->belongsTo('BMLaguna\Genero');
     }
@@ -67,7 +67,7 @@ class Miembro extends Model
     public function emails(){
         return $this->hasMany('BMLaguna\Email');
     }
-    
+
     public function pagos(){
         return $this->hasMany('BMLaguna\Pago');
     }
@@ -89,11 +89,11 @@ class Miembro extends Model
         $categorias = Categoria::all();
         foreach ($categorias as $categoria){
             if (($this->edadTemp($temporada) >= $categoria->edad) && ($this->edadTemp($temporada) < ($categoria->edad + $categoria->duracion)) ){
-                
+
                 return $categoria;
             }
         }
-        
+
         return new Categoria;
     }
 
@@ -157,8 +157,8 @@ class Miembro extends Model
     // Función que saca la ruta del DNI Frontal más reciente del miembro
     public function rutaDNIF(){
         $fotos = $this->documentos->where('descripcion', 'DNI Frontal');
-        $fecha_max = date_create('1900-01-01');        
-        
+        $fecha_max = date_create('1900-01-01');
+
         $ruta = null;
         foreach ($fotos as $foto){
             $fecha = date_create($foto->pivot->f_caducidad);
@@ -174,8 +174,8 @@ class Miembro extends Model
     // Función que saca la ruta del DNI Trasero más reciente del miembro
     public function rutaDNIP(){
         $fotos = $this->documentos->where('descripcion', 'DNI Trasero');
-        $fecha_max = date_create('1900-01-01');        
-        
+        $fecha_max = date_create('1900-01-01');
+
         $ruta = null;
         foreach ($fotos as $foto){
             $fecha = date_create($foto->pivot->f_caducidad);
@@ -197,24 +197,24 @@ class Miembro extends Model
             $categoria = Categoria::find($equipo{'categoria_id'});
             $genero = Genero::find($equipo{'genero_id'});
             $temporada = Temporada::find($equipo{'temporada_id'});
-           
+
             if ($funcion->descripcion == 'familiar'){
                 $resps = Miembro::where('responsable1_id', $this->id)->
                                  orWhere('responsable2_id', $this->id)->
                                  get();
                 foreach($resps as $resp){
                     array_push($cadena, '<em>' . ucfirst($funcion->descripcion) . '</em> de  ' .
-                    '<a href="/miembros/' . $resp->id . '">' . 
-                    $resp->nombre . ' ' . $resp->apellido1 . ' ' . $resp->apellido2 . 
-                    '</a>'); 
+                    '<a href="/miembros/' . $resp->id . '">' .
+                    $resp->nombre . ' ' . $resp->apellido1 . ' ' . $resp->apellido2 .
+                    '</a>');
                 }
             }
             else{
-                array_push($cadena, '<em>' . ucfirst($funcion->descripcion) . '</em> del equipo ' . 
+                array_push($cadena, '<em>' . ucfirst($funcion->descripcion) . '</em> del equipo ' .
                 '<a href="/equipos/' . $equipo{'id'} . '">' .
-                $equipo{'nombre'} . '</a> de la categoría ' . 
-                $categoria{'descripcion'} . ' ' . 
-                ucfirst($genero{'descripcion'}) . ' ' . 
+                $equipo{'nombre'} . '</a> de la categoría ' .
+                $categoria{'descripcion'} . ' ' .
+                ucfirst($genero{'descripcion'}) . ' ' .
                 $temporada{'descripcion'});
             }
         }
@@ -304,10 +304,10 @@ class Miembro extends Model
         for ($x = 1; $x<=$max; $x++){
             array_push($dorsales, $x);
         }
-/*
+
         if (!is_null($this->f_nacimiento)){
             $dorsCat = $this->categoria($tempAct->temporada)->dorsales($this->genero->descripcion);
-            
+
             if (!is_null($this->categoria($tempAct->temporada)->anterior())){
                 $anteriores = $this->categoria($tempAct->temporada)->anterior()->dorsales($this->genero->descripcion);
             }
@@ -317,8 +317,8 @@ class Miembro extends Model
             }
 
             $dorsales = array_diff($dorsales,$dorsCat,$anteriores,$siguientes);
-        }   
-*/
+        }
+
         return $dorsales;
     }
 
@@ -366,7 +366,7 @@ class Miembro extends Model
     public function probado(){
 
         if ( !is_null($this->equipaciones()->where('temporada_id', Temporada::Tactual()->id)->get()) ){
-            
+
             foreach($this->equipaciones()->where('temporada_id', Temporada::Tactual()->id)->get() as $equipacion){
                 if($equipacion){
                     return true;
@@ -384,17 +384,17 @@ class Miembro extends Model
         if ($this->documentos()->where('tipo', 'DNI')->where('subTipo', 'DNIF')->count() == 0){
             return 'no existe';
         }
-        
+
         foreach ($this->documentos()->where('tipo', 'DNI')->where('subTipo', 'DNIF')->get() as $documento){
             if ($documento->pivot->f_caducidad >= date('Y-m-d')){
                 return 'activo';
             }
             //dd($dnifs);
         }
-        
-        
-        return 'caducado';        
- 
+
+
+        return 'caducado';
+
     }
 
     // Esta función crea un nuevo miembro dada una preinscripción ya pagada.
@@ -425,7 +425,7 @@ class Miembro extends Model
             $resp = Miembro::where('nombre', $preinscripcion->nombreR1)->
                     where('apellido1', $preinscripcion->apellido1R1)->
                     where('apellido2', $preinscripcion->apellido2R1)->first();
-                
+
             if (!is_null($resp)){
                 $miembro->responsable1_id = $resp->id;
             }
@@ -444,20 +444,20 @@ class Miembro extends Model
                 // Poner la función de familiar.
                 $responsable1= Miembro::find($miembro->responsable1_id);
 
-                $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');  
+                $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');
                 if ($responsable1->funciones()->where('descripcion', 'familiar')->count() == 0){
                     $responsable1->funciones()->attach($funcione_id, ['equipo_id' => null]);
                 }
             }
         }
 
-        // 
+        //
         if (!is_null($preinscripcion->nombreR2) && !is_null($preinscripcion->apellido1R2)){
             // Ver si existe en la BD
             $resp2 = Miembro::where('nombre', $preinscripcion->nombreR2)->
                     where('apellido1', $preinscripcion->apellido1R2)->
                     where('apellido2', $preinscripcion->apellido2R2)->first();
-                
+
             if (!is_null($resp2)){
                 $miembro->responsable2_id = $resp2->id;
             }
@@ -476,7 +476,7 @@ class Miembro extends Model
                 // Poner la función de familiar.
                 $responsable2= Miembro::find($miembro->responsable2_id);
 
-                $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');  
+                $funcione_id = DB::table('funciones')->where('descripcion', 'familiar')->value('id');
                 if ($responsable2->funciones()->where('descripcion', 'familiar')->count() == 0){
                     $responsable2->funciones()->attach($funcione_id, ['equipo_id' => null]);
                 }
@@ -508,15 +508,16 @@ class Miembro extends Model
     /* Devuelve los equipos en los que ha estado como jugador o entrenador, delegado en la temporada */
     public function equipoTemp($tempSel){
         $retorno = collect([]);
-        
+
         foreach ($this->funciones as $funcion){
             $equipo = Equipo::find($funcion->pivot->equipo_id);
             $categoria = Categoria::find($equipo{'categoria_id'});
             $genero = Genero::find($equipo{'genero_id'});
             $temporada = Temporada::find($equipo{'temporada_id'});
-            
+
             if (($funcion->descripcion != 'familiar') && ($temporada->id == $tempSel->id))  {
-                $retorno->push([ 'equipo'=>$equipo->nombre,
+                $retorno->push([ 'id'=>$equipo->id,
+                                 'equipo'=>$equipo->nombre,
                                  'categoria'=>$categoria->descripcion,
                                  'genero'=>$genero->descripcion,
                                  'funcion'=>$funcion->descripcion]);
@@ -549,7 +550,7 @@ class Miembro extends Model
     public function pagado($temporada){
             return Pago::where('miembro_id', $this->id)->where('temporada_id', $temporada->id)->sum('importe');
         }
-    
+
     /* devuelve el importe de lo que tiene que pagar en una temporada */
     public function aPagar($temporada){
         //dd($temporada->temporada);

@@ -13,28 +13,72 @@
         <div class="col s12">
             <a class="btn-floating waves-effect waves-light btn red lighten-1 modal-trigger right" href="#modal1"><i class="material-icons">add</i></a>
         </div>
-    
-        <div class="col s6">
+
+        <div class="col s7">
             <ul class="collection with-header z-depth-1">
                 <li class="collection-header"><span class="flow-text">Plantilla</span></li>
                 @foreach($equipo->jugadores as $jugador)
-                    <li class="collection-item avatar">
-                        @if (is_null($jugador->rutaFoto()))
-                            <img src="/images/sinfoto.jpg" alt="" class="circle">
-                        @else
-                            <img src="{{'/docs/'.$jugador->rutaFoto() }}" alt="" class="circle">
-                        @endif
-                        <div class="col s2">
-                            <h5 class="red-text">{{$jugador->dorsal}}</h5>
+{{--                     <li class="collection-item">
+                        <div class="col s12">
+                            <div class="card horizontal">
+                                <div class="card-image">
+                                    @if (is_null($jugador->rutaFoto()))
+                                        <img src="/images/sinfoto.jpg" alt="">
+                                    @else
+                                        <img src="{{'/docs/'.$jugador->rutaFoto() }}" alt="" width="100" height="190">
+                                    @endif  
+                                    <span>
+                                        @if ($jugador->preinscrito())
+                                            <i class="material-icons tooltipped md-18" data-tooltip="Preinscrito">euro</i>
+                                        @else
+                                            <i class="material-icons tooltipped md-18 md-dark md-inactive" data-tooltip="No Preinscrito">euro</i>
+                                        @endif
+                                        @if ($jugador->probado())
+                                            <i class="material-icons tooltipped md-18 " data-tooltip="Equipación Probada">local_grocery_store</i>
+                                        @else
+                                            <i class="material-icons tooltipped md-18 md-dark md-inactive" data-tooltip="Equipación No Probada">local_grocery_store</i>
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        
+                    </li> --}}
+                    <li class="collection-item avatar">
+                        <div class="col s2">
+                            <div class="col s12">
+                                <div class="col s10">
+                                    @if (is_null($jugador->rutaFoto()))
+                                        <img src="/images/sinfoto.jpg" alt="" class="circle">
+                                    @else
+                                        <img src="{{'/docs/'.$jugador->rutaFoto() }}" alt="" class="circle">
+                                    @endif
+                                </div>
+                                <div class="col s2">
+                                    <h5 class="red-text">{{$jugador->dorsal}}</h5>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col s10">
                             <span class="title"> 
-                                {{ $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 }} 
+                                <b>{{ $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 }} </b>
                             </span>
+                            
                             <p >{{ date('d/m/Y', strtotime($jugador->f_nacimiento)) . ' (' . $jugador->edadReal($equipo->temporada->temporada) . ' años)'}} <br>
-                                {{ $jugador->categoriaTemp($equipo->temporada->temporada) }}
-                            </p>
+                                {{ $jugador->categoriaTemp($equipo->temporada->temporada) }} </p>
+{{--                             
+                                    @if ($jugador->preinscrito())
+                                        <i class="material-icons tooltipped md-18" data-tooltip="Preinscrito">euro</i>
+                                    @else
+                                        <i class="material-icons tooltipped md-18 md-dark md-inactive" data-tooltip="No Preinscrito">euro</i>
+                                    @endif
+                                
+                                
+                                    @if ($jugador->probado())
+                                        <i class="material-icons tooltipped md-18 " data-tooltip="Equipación Probada">local_grocery_store</i>
+                                    @else
+                                        <i class="material-icons tooltipped md-18 md-dark md-inactive" data-tooltip="Equipación No Probada">local_grocery_store</i>
+                                    @endif
+ --}}                            
                             <span  class="secondary-content">
                                 <a href="/miembros/{{$jugador->id}}/edit" data-tooltip="Editar datos"><i class="material-icons black-text">edit</i></a>
                                 <a href="/miembros/{{$jugador->id}}"><i class="material-icons black-text">assignment</i></a>
@@ -46,7 +90,7 @@
             </ul>
         </div>
 
-        <div class="col s6">
+        <div class="col s5">
             <ul class="collection with-header z-depth-1">
                     <li class="collection-header"><span class="flow-text">Técnicos</span></li>
                     @foreach($equipo->oficiales as $oficial)
@@ -57,7 +101,7 @@
                             <img src="{{'/docs/'.$oficial->rutaFoto() }}" alt="" class="circle">
                         @endif
 
-                        <span class="title"> {{ $oficial->nombre . ' ' . $oficial->apellido1 . ' ' . $oficial->apellido2 }} </span>
+                        <span class="title"><b> {{ $oficial->nombre . ' ' . $oficial->apellido1 . ' ' . $oficial->apellido2 }}</b> </span>
 
                         @foreach ($oficial->funciones as $funcion)
                             @if (($funcion->pivot->equipo_id == $equipo->id) && ($funcion->descripcion != 'jugador'))

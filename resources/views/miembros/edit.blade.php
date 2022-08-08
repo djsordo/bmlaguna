@@ -13,6 +13,9 @@
                     @method('PUT')
                     @csrf
 
+                    {{-- Elemento oculto para volver a la página anterior --}}
+                    <input type="text" id="urlPrevia" name="urlPrevia" value="{{URL::previous()}}" hidden>
+
                     @datosPersonales (['miembro' => $miembro, 'generos' => $generos, 'dorsales' => $dorsales])
                     @enddatosPersonales
 
