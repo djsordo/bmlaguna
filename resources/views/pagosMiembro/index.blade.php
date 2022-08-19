@@ -18,7 +18,7 @@
                             @endforeach
                         </select>
                         <label for="tempselect">Temporada</label>
-                    </div>  
+                    </div>
 
                     <div class="input-field col s3">
                         <input type="number" id="miembro_id" name="miembro_id" value='{{$miembro_id}}' class="validate" required hidden>
@@ -77,13 +77,13 @@
                         </div>
 
                         <div class="input-field col s3">
-                            <input type="number" placeholder="Importe" id="importe" name="importe" class="validate" value="{{$cuota - $pagado}}" required>
+                            <input type="number" placeholder="Importe" id="importe" name="importe" class="validate" value="{{$cuota - $pagado}}" step=".01" required>
                             <label for="importe">Importe del pago:</label>
                         </div>
 
                         <div class="input-field col s3">
                             <input type="number" id="miembro_id" name="miembro_id" value='{{$miembro_id}}' class="validate" required hidden>
-                            
+
                         </div>
                         <div class="modal-footer">
                             <button class="btn red" type="submit">Guardar</button>
@@ -124,7 +124,7 @@
             @endforeach
             </ul>
         </div>
-      
+
     </div>
 
 
