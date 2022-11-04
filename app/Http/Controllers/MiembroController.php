@@ -319,9 +319,11 @@ class MiembroController extends Controller
         //     $miembro->f_baja = date('d-m-Y', strtotime($miembro->f_baja));
         // }
 
-        $dorsales = array();
+        /* $dorsales = array();
         array_push($dorsales, $miembro->dorsal);
-        $dorsales = array_merge($dorsales, $miembro->dorsales());
+        $dorsales = array_merge($dorsales, $miembro->dorsales()); */
+
+        $dorsales = range(1,99);
 
         return view('miembros.edit', compact('funciones', 'generos', 'responsables', 'miembro', 'telefonos', 'emails', 'dorsales'));
     }
