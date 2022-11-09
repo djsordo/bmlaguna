@@ -71,7 +71,7 @@
     <p>
         Si se elige el pago en dos partes, la segunda deberá ser satisfecha antes del 15 de noviembre. De no ser así, se procederá al bloqueo de la ficha federativa del jugador
         hasta que se solucione el problema. Para poder solventar cualquier situación especial con respecto al pago de la cuota, contactar con el club por correo a la dirección
-        bmlagunadircc@gmail.com, o personarse en la oficina en los horarios habituales.
+        bmnlaguna@gmail.com, o personarse en la oficina en los horarios habituales.
     </p>
 
 </body>
