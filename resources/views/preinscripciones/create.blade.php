@@ -246,35 +246,49 @@
                     </div>
 
                     <div class="col s12">
-                        <div class="col s10">
-                            Pago de la mitad de la cuota (Varía según categoría, ver tabla de coutas abajo)
+                        <div class="col s11">
+                            Modalidad de pago en 3 recibos (ver tabla de cuotas para la temporada 23-24 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
                         </div>
-                        <div class="col s2">
+                        <div class="col s1">
                             <label>
-                                <input name="importePago" type="radio" value="80" required/>
+                                <input name="importePago" type="radio" value="3" required/>
                                 <span></span>
                             </label>
                         </div>
                     </div>
                     <div class="col s12">
-                        <div class="col s10">
-                            Pago de toda la inscripción (ver tabla de cuotas abajo)
+                        <div class="col s11">
+                            Modalidad de pago en 2 recibos (ver tabla de cuotas para la temporada 23-24 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
                         </div>
-                        <div class="col s2">
+                        <div class="col s1">
                             <label>
-                                <input name="importePago" type="radio" value="0" required/>
+                                <input name="importePago" type="radio" value="2" required/>
+                                <span></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col s12">
+                        <div class="col s11">
+                            Modalidad de pago en 1 recibo (ver tabla de cuotas para la temporada 23-24 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
+                        </div>
+                        <div class="col s1">
+                            <label>
+                                <input name="importePago" type="radio" value="1" required/>
                                 <span></span>
                             </label>
                         </div>
                     </div>
 
                     <div class="col s12">
-                        <p align="justify">Cuotas para la temporada {{$temporada->descripcion}} en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>.</p></br>
-                        <p align="justify">AVISO - Si se elige como forma de pago la mitad de la cuota, el total de la misma deberá ser abonada antes del 15 de Noviembre de 2022. El impago de dicha cuota en el plazo anteriormente citado provocará, salvo imprevistos debidamente comunicados a la Junta Directiva, el bloqueo de la ficha federativa durante el resto de la temporada, o hasta que se satisfaga el pago.</p></br>
+                        <p class="flow-text">AVISO:</p>
+                        <p align="justify">Los <b>pagos de los recibos se deben realizar convenientemente y en su fecha</b>. De no ser así, se procederá al bloqueo de la ficha federativa del jugador hasta que se solucione el problema.</p>
+                        <p align="justify">Para poder solventar cualquier situación especial o incidencia con respecto al pago de la cuota, contactar con el Club por correo a la dirección bmnlaguna@gmail.com, o personalmente en la oficina.</p>
+                        <p align="justify">La <b>oficina se sitúa</b> en el Polideportivo Municipal de Laguna de Duero (Avd de las Salinas nº3), y abre los miércoles y viernes de 19 a 21 horas.</p></br>
                     </div>
 
                     <div class="col s12">
-                        <p align="justify">AVISO DE CONFIDENCIALIDAD: según lo dispuesto en la legislación en materia de protección de datos y por el RGPD UE 2016/679 de la LSSI (34/2002), garantizamos la confidencialidad de sus datos los cuales serán incluidos en un fichero de nuestra propiedad. Usted podrá ejercitar sus derechos de acceso, rectificación, cancelación o supresión, oposición, limitación del tratamiento o portabilidad de sus datos comunicándose por correo electrónico a <b>bmlagunadircc@gmail.com</b>. Igualmente tiene usted derecho a presentar una reclamación ante la Agencia de Protección de Datos.</p>
+                        <p class="flow-text">AVISO DE CONFIDENCIALIDAD:</p>
+                        <p align="justify">según lo dispuesto en la legislación en materia de protección de datos y por el RGPD UE 2016/679 de la LSSI (34/2002), garantizamos la confidencialidad de sus datos los cuales serán incluidos en un fichero de nuestra propiedad. Usted podrá ejercitar sus derechos de acceso, rectificación, cancelación o supresión, oposición, limitación del tratamiento o portabilidad de sus datos comunicándose por correo electrónico a <b>bmlagunadircc@gmail.com</b>. Igualmente tiene usted derecho a presentar una reclamación ante la Agencia de Protección de Datos.</p>
                         <p align="justify">Así mismo, les pedimos que lean las <a href="/docsInscripcion/Normas.pdf" target="_blank">normas del club</a>, para poder aceptarlas posteriormente.</p>
                     </div>
                 </div>

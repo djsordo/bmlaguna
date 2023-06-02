@@ -26,12 +26,16 @@
                         <input type="number" placeholder="Duración *" id="duracion" name="duracion" value="{{$categoria->duracion}}" class="validate" required>
                         <label for="duración">Duración de la categoría (años):</label>
                     </div>
-                    <div class="input-field col s6">
+                    <div class="input-field col s3">
                         <input type="number" placeholder="Precio *" id="precio_inscripcion" name="precio_inscripcion" value="{{$categoria->precio_inscripcion}}" class="validate" required>
                         <label for="precio_inscripcion">Precio de la inscripción:</label>
-                    </div>    
+                    </div>
+                    <div class="input-field col s3">
+                        <input type="number" placeholder="Precio primer plazo *" id="precio_entrada" name="precio_entrada" value="{{$categoria->precio_entrada}}" class="validate" required>
+                        <label for="precio_entrada">Precio del primer plazo:</label>
+                    </div>
                     <button class="btn red" type="submit">Guardar</button>
-                </div>        
+                </div>
             </form>
         </div>
     </div>

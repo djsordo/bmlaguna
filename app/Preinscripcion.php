@@ -6,6 +6,7 @@ use BMLaguna\Genero;
 use BMLaguna\Miembro;
 use BMLaguna\Temporada;
 use BMLaguna\Categoria;
+use stdClass;
 
 use Carbon\Carbon;
 
@@ -43,7 +44,9 @@ class Preinscripcion extends Model
         foreach ($categorias as $categoria){
             if ($edad >= $categoria->edad &&
                $edad < $categoria->edad+$categoria->duracion) {
-                $cuota = $categoria->precio_inscripcion;
+                $cuota = new stdClass();
+                $cuota->precio_inscripcion = $categoria->precio_inscripcion;
+                $cuota->precio_entrada = $categoria->precio_entrada;
             }
         }
 

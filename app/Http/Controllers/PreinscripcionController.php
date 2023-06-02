@@ -236,12 +236,15 @@ class PreinscripcionController extends Controller
 
         // Importe de la cuota
         $vPago = $request->input('importePago');
-        if ($vPago == 0){
+        if ($vPago == 1){
             // Ver la cuota correspondiente
-            $vPago = $miembro->cuota();
+            $vPago = $miembro->cuota()->precio_inscripcion;
         }
-        else {
-            $vPago = $miembro->cuota()/2;
+        elseif ($vPago == 2){
+            $vPago = $miembro->cuota()->precio_inscripcion/2;
+        }
+        else{
+            $vPago = $miembro->cuota()->precio_entrada;
         }
 
         $miembro->importePago = $vPago;
@@ -481,12 +484,15 @@ class PreinscripcionController extends Controller
 
         // Importe de la cuota
         $vPago = $request->input('importePago');
-        if ($vPago == 0){
+        if ($vPago == 1){
             // Ver la cuota correspondiente
-            $vPago = $miembro->cuota();
+            $vPago = $miembro->cuota()->precio_inscripcion;
         }
-        else {
-            $vPago = $miembro->cuota()/2;
+        elseif ($vPago == 2){
+            $vPago = $miembro->cuota()->precio_inscripcion/2;
+        }
+        else{
+            $vPago = $miembro->cuota()->precio_entrada;
         }
 
         $miembro->importePago = $vPago;

@@ -12,7 +12,7 @@
                 <span><h4>Lista de categorías</h4></span>
         </div>
 {{--         <div class="col s2">
-                <a href="{{ route('categorias.create') }}" class="btn-floating red waves-effect right"><i class="material-icons">add</i></a> 
+                <a href="{{ route('categorias.create') }}" class="btn-floating red waves-effect right"><i class="material-icons">add</i></a>
         </div> --}}
     </div>
         @foreach($categorias as $categoria)
@@ -23,6 +23,7 @@
                         <p>Edad de comienzo: <strong>{{$categoria->edad}} años</strong></p>
                         <p>Duración de la categoría: <strong>{{$categoria->duracion}} años</strong></p>
                         <p>Precio de la inscripción: <strong>{{$categoria->precio_inscripcion}} euros</strong></p>
+                        <p>Precio del primer plazo: <strong>{{$categoria->precio_entrada}} euros</strong></p>
                     </div>
                     <div class="card-action">
                         <div class="row">
@@ -33,7 +34,7 @@
                                 <form action="/categorias/{{$categoria->id}}" method="POST">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-floating black"><i class="material-icons">delete</i></button>   
+                                    <button type="submit" class="btn-floating black"><i class="material-icons">delete</i></button>
                                 </form>
                             </div>
                         </div>
@@ -42,9 +43,9 @@
             </div>
         @endforeach
 
-        
-    
-        
+
+
+
         {{-- {!! $categorias->render() !!} --}}
     </div>
 @endsection

@@ -47,6 +47,7 @@ class CategoriaController extends Controller
         $categoria->edad = $request->input('edad');
         $categoria->duracion = $request->input('duracion');
         $categoria->precio_inscripcion = $request->input('precio_inscripcion');
+        $categoria->precio_entrada = $request->input('precio_entrada');
 
         $categoria->save();
 
@@ -75,7 +76,7 @@ class CategoriaController extends Controller
      */
     public function edit(Categoria $categoria)
     {
-        return view('categorias.edit', compact('categoria')); 
+        return view('categorias.edit', compact('categoria'));
     }
 
     /**

@@ -8,7 +8,7 @@ use BMLaguna\Miembro;
 
 class Categoria extends Model
 {
-    protected $fillable = ['descripcion', 'edad', 'duracion', 'precio_inscripcion', 'orden'];
+    protected $fillable = ['descripcion', 'edad', 'duracion', 'precio_inscripcion', 'precio_entrada', 'orden'];
 
     public function equipos(){
         return $this->hasMany('BMLaguna\Equipo');
@@ -121,7 +121,7 @@ class Categoria extends Model
         }
 
         $i = 0;
-        
+
         foreach($miembros as $miembro){
             if (!$miembro->preinscrito()) {
                 $miembros->pull($i);
@@ -142,7 +142,7 @@ class Categoria extends Model
         }
 
         $i = 0;
-        
+
         foreach($miembros as $miembro){
             if (!$miembro->probado()) {
                 $miembros->pull($i);
