@@ -72,7 +72,7 @@
     </table>
 
     <p>
-        Ponemos en marcha varias <b>modalidades de pago</b>:
+        Ponemos en marcha varias <b>modalidades de pago</b>, <u>para la inscripción directa en el club</u>:
     </p>
     <ul>
         <li>

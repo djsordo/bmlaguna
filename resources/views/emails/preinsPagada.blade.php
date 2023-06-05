@@ -69,25 +69,10 @@
     <h2 align="center">CLUB BALONMANO LAGUNA</h2>
     <p align="justify">Le informamos que se ha comprobado el pago de la preinscripción {{$nPreinscripcion}}.</p>
     <p align="justify">Adjunto se envía un documento con el recibo justificante de pago de la misma y la hoja de tallaje.</p>
-    <p align="justify">Dentro del mismo, para los nuevos jugadores, o aquellos jugadores que
-        renueven de la temporada anterior y que quieran obtener algún reemplazo de
-        prenda, encontrará otro resguardo que le permitirá realizar la prueba de la
-        equipación a partir del 22 de agosto en la tienda de Justo Muñoz del Centro
-        Comercial Rio Shopping en Arroyo de la encomienda. Tras la prueba de la
-        ropa, Justo Muñoz les llamará cuando esté preparada la misma, y
-        posteriormente realizarán allí el pago de lo pedido.</p>
-    <p align="justify">Los <u>jugadores de campo nuevos</u> deberán adquirir como mínimo las siguientes
-        prendas: las dos camisetas de juego, pantalón corto y chaqueta del chándal,
-        pudiendo pedir a mayores el pantalón de chándal y otras prendas que
-        estimen, como anorak, mochila, etc.</p>
-    <p align="justify">Los <u>porteros nuevos</u> deberán adquirir como mínimo las siguientes prendas:
-        sudadera de portero, pantalón de portero y chaqueta de chándal, pudiendo
-        pedir a mayores el pantalón de chándal, camiseta roja y otras prendas que
-        estimen, como anorak, mochila, etc.</p>
-    <p align="justify">Los <u>jugadores de campo y porteros</u> que renuevan de la temporada anterior,
-        antes de ir a Justo Muñoz, si es que necesitan algún reemplazo, pueden pasar
-        por la oficina para ver si tenemos talla de lo que necesiten.</p>
-    <p align="justify">Los precios de las prendas para esta temporada serán los siguientes:</p>
+    <p align="justify">Dentro del mismo, para los nuevos jugadores, o aquellos jugadores que renueven de la temporada anterior y que quieran obtener algún reemplazo de prenda, encontrará otro resguardo que le permitirá realizar la prueba de la equipación, desde el 15 de junio y hasta el 31 de octubre de 2023, salvo situaciones excepcionales, en la tienda de Justo Muñoz del Centro Comercial Rio Shopping en Arroyo de la Encomienda. Tras la prueba de la ropa, Justo Muñoz les llamará cuando esté preparada la misma, y posteriormente realizarán allí el pago de lo pedido en la recogida.</p>
+    <p align="justify">Los <u>jugadores de campo nuevos</u> deberán adquirir como mínimo las siguientes prendas: las dos camisetas de juego, pantalón corto, chaqueta y pantalón del chándal, pudiendo pedir a mayores otras prendas que estimen, como anorak, mochila, etc.</p>
+    <p align="justify">Los <u>porteros nuevos</u> deberán adquirir como mínimo las siguientes prendas: sudadera de portero, pantalón de portero y chaqueta de chándal, pudiendo pedir a mayores el pantalón de chándal, camiseta roja y otras prendas que estimen, como anorak, mochila, etc.</p>
+    <p align="justify">Los <u>jugadores de campo y porteros que renuevan de la temporada anterior 22-23</u>, antes de ir a Justo Muñoz, si es que necesitan algún reemplazo, pueden pasar por la oficina para ver si tenemos talla de lo que necesiten.</p>
     <div class="datagrid">
         <table align="center">
             <thead>
@@ -96,74 +81,93 @@
                     <th>REFERENCIA</th>
                     <th>COLOR</th>
                     <th>PVP</th>
+                    <th>OBSERVACIONES</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>Camiseta Sublimada</td>
+                    <td>Camiseta Sublimada 1ª equipación</td>
                     <td>JM</td>
-                    <td>Negra</td>
-                    <td>16,00</td>
+                    <td>Sublimada (Negra)</td>
+                    <td>16,00 €</td>
+                    <td>Jugador</td>
                 </tr>
                 <tr>
-                    <td>Camiseta Sublimada</td>
-                    <td>09845</td>
-                    <td>Roja</td>
-                    <td>14,00</td>
+                    <td>Camiseta Sublimada 2ª equipación</td>
+                    <td>JM</td>
+                    <td>Sublimada (Roja)</td>
+                    <td>15,00 €</td>
+                    <td>Jugador o portero</td>
                 </tr>
                 <tr>
-                    <td>Short Polo</td>
-                    <td>13800</td>
+                    <td>Short Astro ACERBIS</td>
+                    <td>0021903</td>
                     <td>Negro</td>
-                    <td>7,20</td>
+                    <td>7,75 €</td>
+                    <td>Jugador</td>
                 </tr>
                 <tr>
-                    <td>Chaqueta Chándal Capri</td>
+                    <td>Chaqueta Chándal Capri LUANVI</td>
                     <td>15115</td>
                     <td>Roja/Negra</td>
-                    <td>24,95</td>
+                    <td>23,00 €</td>
+                    <td>Jugador o portero</td>
                 </tr>
                 <tr>
-                    <td>Pantalón Chándal Capri</td>
+                    <td>Pantalón Chándal Frey ACERBIS</td>
                     <td>16629</td>
                     <td>Negro</td>
-                    <td>15,80</td>
+                    <td>13,50 €</td>
+                    <td>Jugador o portero</td>
                 </tr>
                 <tr>
-                    <td>Pantalón Gama Portero</td>
+                    <td>Pantalón Gama Portero LUANVI</td>
                     <td>08490</td>
                     <td>Negro</td>
-                    <td>13,00</td>
+                    <td>13,95 €</td>
+                    <td>Portero</td>
                 </tr>
                 <tr>
-                    <td>Sudadera Nocaut Portero</td>
+                    <td>Sudadera Nocaut Portero LUANVI</td>
                     <td>15148</td>
                     <td>Azul Marino</td>
-                    <td>23,25</td>
+                    <td>24,25 €</td>
+                    <td>Portero</td>
                 </tr>
                 <tr>
-                    <td>Anorak Kiev</td>
-                    <td>13761</td>
+                    <td>Anorak Bellatrix ACERBIS</td>
+                    <td>0022190</td>
                     <td>Negro</td>
-                    <td>35,00</td>
+                    <td>36,50 €</td>
+                    <td>Jugador o portero</td>
                 </tr>
                 <tr>
-                    <td>Chaqueta Forrada Gama</td>
-                    <td>13761</td>
-                    <td>Negro</td>
-                    <td>30,00</td>
+                    <td>Mochila Backpack ACERBIS</td>
+                    <td>0016401</td>
+                    <td>Negra</td>
+                    <td>25,00 €</td>
+                    <td>Jugador o portero</td>
                 </tr>
                 <tr>
-                    <td>Polo mc Capri</td>
-                    <td>15117</td>
-                    <td>Rojo/Negro</td>
-                    <td>12,00</td>
-                </tr>
-                <tr>
-                    <td>Mochila Rin</td>
-                    <td>07243</td>
+                    <td>Botellín Agua Roly</td>
+                    <td>Tarek4125</td>
                     <td>Roja</td>
-                    <td>25,00</td>
+                    <td>10,00 €</td>
+                    <td>Jugador o portero</td>
+                </tr>
+                <tr>
+                    <td>Camiseta Mida ACERBIS</td>
+                    <td>0910464</td>
+                    <td>Rojo</td>
+                    <td>8,50 €</td>
+                    <td>Padres</td>
+                </tr>
+                <tr>
+                    <td>Chaqueta chandal Atlantis ACERBIS</td>
+                    <td>0910011</td>
+                    <td>Negra</td>
+                    <td>21,50 €</td>
+                    <td>Padres</td>
                 </tr>
             </tbody>
         </table>
