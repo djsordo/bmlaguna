@@ -235,7 +235,7 @@
                         <span class="card-title col s12"><strong class="flow-text">OPCIONES DE PAGO</strong></span>
                     </div>
 
-                    <div class="col s12">
+                    <div class="col s12" hidden>
                         <div class="col s11">
                             Modalidad de pago en 3 recibos (ver tabla de cuotas para la temporada 23-24 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
                         </div>
