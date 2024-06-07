@@ -47,7 +47,13 @@ class CategoriaController extends Controller
         $categoria->edad = $request->input('edad');
         $categoria->duracion = $request->input('duracion');
         $categoria->precio_inscripcion = $request->input('precio_inscripcion');
-        $categoria->precio_entrada = $request->input('precio_entrada');
+        $categoria->precio_inscripcion2c = $request->input('precio_inscripcion2c');
+        $categoria->precio_inscripcion3c = $request->input('precio_inscripcion3c');
+        $categoria->precio_2c1 = $request->input('precio_2c1');
+        $categoria->precio_2c2 = $request->input('precio_2c2');
+        $categoria->precio_3c1 = $request->input('precio_3c1');
+        $categoria->precio_3c2 = $request->input('precio_3c2');
+        $categoria->precio_3c3 = $request->input('precio_3c3');
 
         $categoria->save();
 

@@ -241,10 +241,13 @@ class PreinscripcionController extends Controller
             $vPago = $miembro->cuota()->precio_inscripcion;
         }
         elseif ($vPago == 2){
-            $vPago = $miembro->cuota()->precio_inscripcion/2;
+            $vPago = $miembro->cuota()->precio_2c1;
+        }
+        elseif ($vPago == 3){
+            $vPago = $miembro->cuota()->precio_3c1;
         }
         else{
-            $vPago = $miembro->cuota()->precio_entrada;
+            $vPago = 0;
         }
 
         $miembro->importePago = $vPago;
@@ -489,27 +492,31 @@ class PreinscripcionController extends Controller
             $vPago = $miembro->cuota()->precio_inscripcion;
         }
         elseif ($vPago == 2){
-            $vPago = $miembro->cuota()->precio_inscripcion/2;
+            $vPago = $miembro->cuota()->precio_2c1;
+        }
+        elseif ($vPago == 3){
+            $vPago = $miembro->cuota()->precio_3c1;
         }
         else{
-            $vPago = $miembro->cuota()->precio_entrada;
+            $vPago = 0;
         }
-
         $miembro->importePago = $vPago;
 
         $miembro->save();
 
-        // añadimos el pago
-        $pago = new Pago();
+        // añadimos el pago, si es > 0
+        if ($vPago > 0){
+            $pago = new Pago();
 
-        $pago->importe = $vPago;
-        $pago->temporada_id = $miembro->temporada_id;
-        $pago->miembro_id = $miembro->miembro_id;
-        $pago->nRecibo = $miembro->nRecibo;
-        $pago->tipospago_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
-        $pago->f_pago = date('Y-m-d', strtotime($miembro->f_pago) );
+            $pago->importe = $vPago;
+            $pago->temporada_id = $miembro->temporada_id;
+            $pago->miembro_id = $miembro->miembro_id;
+            $pago->nRecibo = $miembro->nRecibo;
+            $pago->tipospago_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
+            $pago->f_pago = date('Y-m-d', strtotime($miembro->f_pago) );
 
-        $pago->save();
+            $pago->save();
+        }
 
         $miembro->save();
 

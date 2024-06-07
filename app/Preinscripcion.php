@@ -46,7 +46,7 @@ class Preinscripcion extends Model
                $edad < $categoria->edad+$categoria->duracion) {
                 $cuota = new stdClass();
                 $cuota->precio_inscripcion = $categoria->precio_inscripcion;
-                $cuota->precio_entrada = $categoria->precio_entrada;
+                $cuota->precio_3c1 = $categoria->precio_3c1;
             }
         }
 

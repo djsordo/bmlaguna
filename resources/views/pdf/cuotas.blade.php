@@ -63,8 +63,8 @@
                 <td colspan="2"><b>{{$categoria->descripcion}}</b></td>
                 <td colspan="2">{{$categoria->rangoannos($temporada)[0]}} - {{$categoria->rangoannos($temporada)[1]}}</td>
                 <td colspan="2">{{$categoria->precio_inscripcion}}</td>
-                <td colspan="2">{{$categoria->precio_entrada}}+{{($categoria->precio_inscripcion - $categoria->precio_entrada)/2}}+{{($categoria->precio_inscripcion - $categoria->precio_entrada)/2}}</td>
-                <td colspan="2">{{$categoria->precio_inscripcion/2}}+{{$categoria->precio_inscripcion/2}}</td>
+                <td colspan="2">{{$categoria->precio_3c1}}+{{$categoria->precio_3c2}}+{{$categoria->precio_3c3}}</td>
+                <td colspan="2">{{$categoria->precio_2c1}}+{{$categoria->precio_2c2}}</td>
                 <td colspan="2">{{$categoria->precio_inscripcion}}</td>
             </tr>
         @endforeach
@@ -76,22 +76,22 @@
     </p>
     <ul>
         <li>
-            <b>Pago en 3 recibos.</b> Solo para los que se inscriban hasta el 15 de julio de 2023. Los pagos se realizarán de la siguiente forma:
+            <b>Pago en 3 recibos.</b> Solo para los que se inscriban hasta el 15 de julio de 2024. Los pagos se realizarán de la siguiente forma:
             <ul>
-                <li><b>Primer pago</b>, a continuación de la inscripción, y con fecha máxima el <b>15 de julio de 2023</b>.</li>
-                <li><b>Segundo pago</b>, con fecha máxima el <b>15 de octubre de 2023</b>.</li>
-                <li><b>Tercer pago</b>, con fecha máxima el <b>15 de enero de 2024</b>.</li>
+                <li><b>Primer pago</b>, a continuación de la inscripción, y con fecha máxima el <b>15 de julio de 2024</b>.</li>
+                <li><b>Segundo pago</b>, con fecha máxima el <b>15 de octubre de 2025</b>.</li>
+                <li><b>Tercer pago</b>, con fecha máxima el <b>15 de enero de 2025</b>.</li>
             </ul>
         </li>
         <li>
             <b>Pago en 2 recibos.</b> Los pagos se realizarán de la siguiente forma:
             <ul>
-                <li><b>Primer pago</b>, a continuación de la inscripción, y con fecha máxima el <b>15 de julio de 2023</b> para los inscritos hasta esa misma fecha, y con fecha máxima el <b>15 de octubre de 2023</b> para los inscritos hasta esa misma fecha y posteriores al 15 de julio de 2023.</li>
-                <li><b>Segundo pago</b>, con fecha máxima el <b>15 de enero de 2024</b>.</li>
+                <li><b>Primer pago</b>, a continuación de la inscripción.</li>
+                <li><b>Segundo pago</b>, con fecha máxima el <b>15 de enero de 2025</b>.</li>
             </ul>
         </li>
         <li>
-            <b>Pago en 1 recibo</b>. A continuación de la inscripción, y con fecha máxima el <b>15 de julio de 2023</b> para los inscritos hasta esa misma fecha, y con fecha máxima el <b>15 de octubre de 2023</b> para los inscritos hasta esa misma fecha y posteriores al 15 de julio de 2023.
+            <b>Pago en 1 recibo</b>. A continuación de la inscripción.
         </li>
     </ul>
     <p>
@@ -105,10 +105,16 @@
         Los <b>pagos de los recibos se deben realizar convenientemente y en su fecha</b>. De no ser así, se procederá al bloqueo de la ficha federativa del jugador hasta que se solucione el problema.
     </p>
     <p>
+        Todo aquel que lo desee podrá adelantar el pago de los recibos.
+    </p>
+    <p>
         Para poder solventar cualquier situación especial o incidencia con respecto al pago de la cuota, contactar con el Club por correo a la dirección bmnlaguna@gmail.com, o personalmente en la oficina.
     </p>
     <p>
         <b>La oficina se sitúa</b> en el Polideportivo Municipal de Laguna de Duero (Avd de las Salinas nº3), y abre los miércoles y viernes de 19 a 21 horas.
+    </p>
+    <p>
+        La equipación de juego se compra aparte, en la tienda web de New Balance Bm Laguna, y hasta el 31 de octubre de 2024, salvo situación excepcional. Se recibirán instrucciones al respecto en el mail que se envía a los padres junto con el primer justificante de pago del precio de la actividad.
     </p>
 </body>
 </html>

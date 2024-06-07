@@ -207,7 +207,7 @@
                         </div>
                         <div class="col s1">
                             <label>
-                                <input name="autorizacion" type="radio" value="S" required/>
+                                <input name="autorizacion" type="radio" checked value="S" required/>
                                 <span></span>
                             </label>
                         </div>
@@ -226,7 +226,7 @@
                         </div>
                         <div class="col s1">
                             <label>
-                                <input name="socio" type="radio" value="S" required/>
+                                <input name="socio" type="radio" value="S" checked required/>
                                 <span></span>
                             </label>
                         </div>
@@ -245,7 +245,7 @@
                         <span class="card-title col s12"><strong class="flow-text">OPCIONES DE PAGO</strong></span>
                     </div>
 
-                    <div class="col s12" hidden>
+                    <div class="col s12">
                         <div class="col s11">
                             Modalidad de pago en 3 recibos (ver tabla de cuotas para la temporada 23-24 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
                         </div>
@@ -274,6 +274,17 @@
                         <div class="col s1">
                             <label>
                                 <input name="importePago" type="radio" value="1" required/>
+                                <span></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col s12">
+                        <div class="col s11">
+                            Modalidad de pago en la web de New Balance (a pagar en el momento de encargar la equipación).
+                        </div>
+                        <div class="col s1">
+                            <label>
+                                <input name="importePago" type="radio" value="0" required/>
                                 <span></span>
                             </label>
                         </div>

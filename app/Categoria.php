@@ -8,7 +8,18 @@ use BMLaguna\Miembro;
 
 class Categoria extends Model
 {
-    protected $fillable = ['descripcion', 'edad', 'duracion', 'precio_inscripcion', 'precio_entrada', 'orden'];
+    protected $fillable = [ 'descripcion',
+                            'edad',
+                            'duracion',
+                            'precio_inscripcion',
+                            'precio_inscripcion2c',
+                            'precio_inscripcion3c',
+                            'precio_2c1',
+                            'precio_2c2',
+                            'precio_3c1',
+                            'precio_3c2',
+                            'precio_3c3',
+                            'orden'];
 
     public function equipos(){
         return $this->hasMany('BMLaguna\Equipo');

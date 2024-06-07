@@ -22,8 +22,9 @@
                         <span class="card-title"><strong>{{$categoria->descripcion}}</strong></span>
                         <p>Edad de comienzo: <strong>{{$categoria->edad}} años</strong></p>
                         <p>Duración de la categoría: <strong>{{$categoria->duracion}} años</strong></p>
-                        <p>Precio de la inscripción: <strong>{{$categoria->precio_inscripcion}} euros</strong></p>
-                        <p>Precio del primer plazo: <strong>{{$categoria->precio_entrada}} euros</strong></p>
+                        <p>Precio de la inscripción (1 plazo): <strong>{{$categoria->precio_inscripcion}} euros</strong></p>
+                        <p>Precio de la inscripción (2 plazos): <strong>{{$categoria->precio_inscripcion2c}} euros ({{$categoria->precio_2c1}}/{{$categoria->precio_2c2}})</strong></p>
+                        <p>Precio de la inscripción (3 plazos): <strong>{{$categoria->precio_inscripcion3c}} euros ({{$categoria->precio_3c1}}/{{$categoria->precio_3c2}}/{{$categoria->precio_3c3}})</strong></p>
                     </div>
                     <div class="card-action">
                         <div class="row">
