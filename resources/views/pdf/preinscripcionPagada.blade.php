@@ -122,7 +122,7 @@
         </tr>
          <tr>
             <td colspan="6">
-                <span class="cabecera">IMPORTE DEL PAGO:</span> <b>{{$preinscripcion->importePago}}</b><br>
+                <span class="cabecera">IMPORTE DEL PAGO:</span> <b>{{$preinscripcion->importePago}}</b> euros<br>
                 <i>A DESCONTAR DE LA CUOTA ANUAL</i>
             </td>
             <td colspan="6">
@@ -143,10 +143,9 @@
         </tr>
     </table>
 
-    <div class="page-break"></div>
+    <!-- <div class="page-break"></div>
 
-    <p align="justify" class="textomini">El tallaje de la ropa y su pago, según las instrucciones contenidas en el mail que emitía este documento y la factura de inscripción, se realizará en la tienda de Justo Muñoz en el CC Rio Shopping de Arroyo de la Encomienda, desde el 1 de julio y hasta el 31 de octubre de 2023, salvo situación excepcional. Debe acudir a la tienda de Justo Muñoz con este documento, anotando previamente el número de dorsal y el nombre de la camiseta, lo que se proporcionará en la oficina del Club Balonmano Laguna.</p>
-    <!-- <p align="justify" class="textomini">Debe acudir a la tienda de Justo Muñoz con este documento, anotando previamente el número de dorsal y el nombre de la camiseta, lo que se proporcionará en la oficina del Club Balonmano Laguna.</p> -->
+     <p align="justify" class="textomini">El tallaje de la ropa y su pago, según las instrucciones contenidas en el mail que emitía este documento y la factura de inscripción, se realizará en la tienda de Justo Muñoz en el CC Rio Shopping de Arroyo de la Encomienda, desde el 1 de julio y hasta el 31 de octubre de 2023, salvo situación excepcional. Debe acudir a la tienda de Justo Muñoz con este documento, anotando previamente el número de dorsal y el nombre de la camiseta, lo que se proporcionará en la oficina del Club Balonmano Laguna.</p>
     <hr/>
 
     <table width="100%"  class="textoRopa">
@@ -287,6 +286,6 @@
     </table>
     <DIV STYLE="position:absolute; top:350px; left:255px; visibility:visible z-index:-1">
         <IMG SRC="images/sello.jpg" width="180">
-        </div>
+    </div> -->
 </body>
 </html>

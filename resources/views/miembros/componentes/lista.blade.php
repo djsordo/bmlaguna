@@ -13,7 +13,7 @@
                         <i class="material-icons tooltipped" data-tooltip="Equipación Probada">local_grocery_store</i>
                     @endif
                 </div>
-   
+
             </div>
             <div class="card-image col s3">
                 @if (is_null($miembro->rutaFoto()))
@@ -52,8 +52,9 @@
                     </div>
 
                     <div class="col s1">
-                        {{-- <a href="{{route ('crear-pago', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a> --}}
-                        <a href="{{route ('miembroPagos', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a>
+                        <!-- <a href="{{route ('miembroPagos', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a> -->
+
+                        <a href="/pagosMiembro/{{$miembro->id}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a>
                     </div>
 
                     <div class="col s1">
@@ -67,24 +68,24 @@
                     @if (!$miembro->preinscrito())
                         <div class="col s1 right">
                             <a href="{{route ('preins-oficina', [$miembro->id])}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Preinscripcion en la oficina"><i class="material-icons">business</i></a>
-                            
+
                         </div>
 
                         <div class="col s1 right">
                             <a href="{{route ('preinsAntiguos', [$miembro->id])}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Enviar Preinscripcion"><i class="material-icons">local_post_office</i></a>
-                            
+
                         </div>
                     @endif
 
                     <div class="col s1 right">
                         <a href="/pdf-equipacion/{{$miembro->id}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Imprimir Equipacion"><i class="material-icons">print</i></a>
-                    </div> 
+                    </div>
 
                     {{-- <div class="col s7">
                         <form action="/miembros/{{$miembro->id}}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn-floating red right"><i class="material-icons">delete</i></button>   
+                            <button type="submit" class="btn-floating red right"><i class="material-icons">delete</i></button>
                         </form>
                     </div>
                     --}}

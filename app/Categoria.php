@@ -19,7 +19,13 @@ class Categoria extends Model
                             'precio_3c1',
                             'precio_3c2',
                             'precio_3c3',
-                            'orden'];
+                            'orden',
+                            'f_plazo_insc',
+                            'f_plazo_2c1',
+                            'f_plazo_2c2',
+                            'f_plazo_3c1',
+                            'f_plazo_3c2',
+                            'f_plazo_3c3'];
 
     public function equipos(){
         return $this->hasMany('BMLaguna\Equipo');

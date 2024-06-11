@@ -9,7 +9,7 @@ use BMLaguna\Pago;
 class Tipospago extends Model
 
 {
-    protected $fillable = ['descripcion'];
+    protected $fillable = ['descripcion', 'modalidad'];
 
     public function pagos(){
         return $this->hasMany('BMLaguna\Pago');

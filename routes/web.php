@@ -24,6 +24,8 @@ Route::get('/pagos', 'PagoController@index')->name('pagos');
 
 
 Route::get('pagosMiembro/{miembro_id}', ['as' => 'pagosMiembro', 'uses' => 'PagosMiembroController@index']);
+Route::get('pagosMiembro/{pago_id}/pagar', ['as' => 'pagosMiembro', 'uses' => 'PagosMiembroController@pagar']);
+Route::get('pagosMiembro/{pago_id}/deshacer', ['as' => 'pagosMiembro', 'uses' => 'PagosMiembroController@deshacer']);
 Route::resource('pagosMiembro', 'PagosMiembroController');
 
 Route::resource('equipos', 'EquipoController');

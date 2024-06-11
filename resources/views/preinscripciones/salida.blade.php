@@ -25,21 +25,6 @@
                 <span class="flow-text">Muchas gracias por realizar la preinscripción.</span>
                 <p>Se le ha asignado el número de preinscripción {{$nPreinscripcion}}.</p>
 
-                <p>Usted ha elegido pagar {{$vPago}} euros.</p>
-
-                <p align="justify">El siguiente paso será realizar el pago elegido. Tenemos tres formas de realizarlo: </p>
-                <li>
-                    Transferencia bancaria.
-                </li>
-
-                <li>
-                    Efectivo en la oficina del club.
-                </li>
-
-                <li>
-                    Tarjeta bancaria en la oficina del club.
-                </li>
-
                 <p align="justify">Se le ha enviado un correo electrónico a la dirección indicada en el formulario de preinscripción donde se encuentran las instrucciones de pago.</p>
                 <p align="justify">Una vez que el pago sea verificado enviaremos otro correo electrónico con el documento acreditativo de la inscripción.</p>
             </div>

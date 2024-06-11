@@ -54,6 +54,24 @@ class CategoriaController extends Controller
         $categoria->precio_3c1 = $request->input('precio_3c1');
         $categoria->precio_3c2 = $request->input('precio_3c2');
         $categoria->precio_3c3 = $request->input('precio_3c3');
+        if (!is_null($request->input('f_plazo_insc'))){
+            $categoria->f_plazo_insc = date('Y-m-d', strtotime($request->input('f_plazo_insc')) );
+        }
+        if (!is_null($request->input('f_plazo_2c1'))){
+            $categoria->f_plazo_2c1 = date('Y-m-d', strtotime($request->input('f_plazo_2c1')) );
+        }
+        if (!is_null($request->input('f_plazo_2c2'))){
+            $categoria->f_plazo_2c2 = date('Y-m-d', strtotime($request->input('f_plazo_2c2')) );
+        }
+        if (!is_null($request->input('f_plazo_3c1'))){
+            $categoria->f_plazo_3c1 = date('Y-m-d', strtotime($request->input('f_plazo_3c1')) );
+        }
+        if (!is_null($request->input('f_plazo_3c2'))){
+            $categoria->f_plazo_3c2 = date('Y-m-d', strtotime($request->input('f_plazo_3c2')) );
+        }
+        if (!is_null($request->input('f_plazo_3c3'))){
+            $categoria->f_plazo_3c3 = date('Y-m-d', strtotime($request->input('f_plazo_3c3')) );
+        }
 
         $categoria->save();
 

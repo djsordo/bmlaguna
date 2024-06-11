@@ -13,7 +13,7 @@
                 {{-- <span class="col s1 flow-text red-text center">{{$miembro->dorsal}}</span> --}}
 
                 <div class="col s10 flow-text"><strong>{{ $miembro->nombre . ' ' . $miembro->apellido1 . ' ' . $miembro->apellido2 }}</strong></div>
-                
+
                 <div class="col s1">
                     <div class="col s1">
                         @if ($miembro->preinscrito())
@@ -50,7 +50,8 @@
                     </div>
                     <div class="col s1">
                         {{-- <a href="{{route ('crear-pago', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a> --}}
-                        <a href="{{route ('pagosMiembro', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a>
+                        <!-- <a href="{{route ('pagosMiembro', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a> -->
+                        <a href="/pagosMiembro/{{$miembro->id}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a>
                     </div>
 
                     <div class="col s1">
@@ -64,18 +65,18 @@
                     @if (!$miembro->preinscrito())
                         <div class="col s1 right">
                             <a href="{{route ('preins-oficina', [$miembro->id])}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Preinscripcion en la oficina"><i class="material-icons">business</i></a>
-                            
+
                         </div>
 
                         <div class="col s1 right">
                             <a href="{{route ('preinsAntiguos', [$miembro->id])}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Enviar Preinscripcion"><i class="material-icons">attach_email</i></a>
-                            
+
                         </div>
                     @endif
 
                     <div class="col s1 right">
                         <a href="/pdf-equipacion/{{$miembro->id}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Imprimir Equipacion"><i class="material-icons">print</i></a>
-                    </div> 
+                    </div>
 
                     <div class="col s12">
                         <p class="flow-text">Historial</p>
@@ -86,7 +87,7 @@
                     <div class="col s12 right-align">
                         @if (!is_null($miembro->f_baja))
                             <a href="{{route ('miembroActivar', $miembro)}}" class="black-text tooltipped" data-tooltip="Reactivar miembro"><i class="material-icons">published_with_changes</i></a>
-                        @else 
+                        @else
                             <a href="{{route ('miembroBaja', $miembro)}}" class="black-text tooltipped" data-tooltip="Dar de baja miembro"><i class="material-icons">unpublished</i></a>
                         @endif
                     </div>

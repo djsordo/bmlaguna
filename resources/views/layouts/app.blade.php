@@ -13,7 +13,7 @@
     <link href="/css/material-icons.css" rel="stylesheet">
     <link href="/css/select2-materialize.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-   
+
     <link href="/css/materialert.css" rel="stylesheet">
     <link href="/css/custom.css" rel="stylesheet">
 </head>
@@ -36,7 +36,7 @@
     @endauth
 
     <div class="row">
-        <div class="col s10 offset-s2 red lighten-5">
+        <div class="col s12 offset-s1 red lighten-5">
             <main class="container">
                 @yield('content')
             </main>
@@ -61,7 +61,7 @@
   };
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
-</script>  
+</script>
 </body>
 
 </html>

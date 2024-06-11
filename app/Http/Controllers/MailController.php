@@ -30,7 +30,7 @@ class MailController extends Controller
 
         });
 
-        
+
         return Redirect::to('/miembros');
     }
 
@@ -110,13 +110,33 @@ class MailController extends Controller
     // Esta función envía el primer correo genérico de preinscripción (El correo con las instrucciones de pago)
     public function preinsGenerica($miembro_id){
         $preinscripcion = Preinscripcion::find($miembro_id);
-        
-        $for = $preinscripcion->email;
-        
-        $nPreinscripcion = $preinscripcion->nPreinscripcion;
-        $vPago = $preinscripcion->importePago;
 
-        Mail::send('emails.preinsConf', compact('nPreinscripcion', 'vPago'), function($msj) use ($for){
+        // Importe de la cuota (modalidad de la cuota) 1, 2 y 3 número de plazos; 0 New Balance
+        $vPago = $preinscripcion->modalidad_pago;
+        if ($vPago == 1){
+            $plazo1 = date('d-m-Y', strtotime($preinscripcion->cuota()->f_plazo_insc));
+            $texto = "{$preinscripcion->cuota()->precio_inscripcion} euros en un sólo pago antes del {$plazo1}.";
+        }
+        elseif ($vPago == 2){
+            $plazo1 = date('d-m-Y', strtotime($preinscripcion->cuota()->f_plazo_2c1));
+            $plazo2 = date('d-m-Y', strtotime($preinscripcion->cuota()->f_plazo_2c2));
+            $texto = "{$preinscripcion->cuota()->precio_inscripcion2c} euros en dos cuotas. La primera será de {$preinscripcion->cuota()->precio_2c1} euros a pagar antes del {$plazo1}. La segunda será de {$preinscripcion->cuota()->precio_2c2} euros a pagar antes del {$plazo2}";
+        }
+        elseif ($vPago == 3){
+            $plazo1 = date('d-m-Y', strtotime($preinscripcion->cuota()->f_plazo_3c1));
+            $plazo2 = date('d-m-Y', strtotime($preinscripcion->cuota()->f_plazo_3c2));
+            $plazo3 = date('d-m-Y', strtotime($preinscripcion->cuota()->f_plazo_3c3));
+            $texto = "{$preinscripcion->cuota()->precio_inscripcion3c} euros en tres cuotas. La primera será de {$preinscripcion->cuota()->precio_3c1} antes del {$plazo1}, la segunda será de {$preinscripcion->cuota()->precio_3c2} antes del {$plazo2}, y la tercera {$preinscripcion->cuota()->precio_3c3} antes del {$plazo3}.";
+        }
+        else{
+            $texto = "{$preinscripcion->cuota()->precio_inscripcion} euros que se abonarán en la tienda de New Balance.";
+        }
+
+        $for = $preinscripcion->email;
+
+        $nPreinscripcion = $preinscripcion->nPreinscripcion;
+
+        Mail::send('emails.preinsConf', compact('nPreinscripcion', 'texto'), function($msj) use ($for){
             $msj->subject('Instrucciones para el pago de la preinscripción');
             $msj->to($for);
         });
@@ -127,13 +147,13 @@ class MailController extends Controller
     // Esta función envía el segundo correo genérico de inscripción (El correo con la factura de el pago una vez realizado)
     public function insGenerica($miembro_id){
         $preinscripcion = Preinscripcion::find($miembro_id);
-        
+
         $for = $preinscripcion->email;
-        
+
         $nPreinscripcion = $preinscripcion->nPreinscripcion;
-        
+
         $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
-        
+
         // Envío de correo con el recibo adjunto
         Mail::send('emails.preinsPagada', compact('nPreinscripcion'), function($msj) use ($for, $pdf){
             $msj->subject('Inscripción Club Balonmano Laguna');
@@ -168,7 +188,7 @@ class MailController extends Controller
         $email = Email::where('miembro_id', $miembro_id)->first();
 
         if (is_null($email)){
-            return redirect()->back()->with('status', 'No existe dirección de correo para este miembro');    
+            return redirect()->back()->with('status', 'No existe dirección de correo para este miembro');
         }
 
         $for = $email->email;
@@ -180,7 +200,7 @@ class MailController extends Controller
 
         return redirect()->back()->with('status', 'Correo de preinscripción enviado correctamente');
     }
- 
+
     public function insAntiguos($miembro_id, $pendiente){
         //dd($pendiente);
         $email = Email::where('miembro_id', $miembro_id)->first();
@@ -188,7 +208,7 @@ class MailController extends Controller
         $tActual = Temporada::Tactual();
 
         if (is_null($email)){
-            return redirect()->back()->with('status', 'No existe dirección de correo para este miembro');    
+            return redirect()->back()->with('status', 'No existe dirección de correo para este miembro');
         }
 
         $for = $email->email;
@@ -221,7 +241,7 @@ class MailController extends Controller
         $equipo = Equipo::find($equipo_id);
         $jugadores = $equipo->jugadores()->get();
 //dd($jugadores);
-       
+
         $cadena = '';
 
         foreach ($jugadores as $jugador){
@@ -236,11 +256,11 @@ class MailController extends Controller
                         $msj->subject('Preinscripcion Club Balonmano Laguna');
                         $msj->to($for);
                     });
-                    $cadena = $cadena . '<p>' . $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 . '->' . $for . ' : Enviado Correctamente'; 
+                    $cadena = $cadena . '<p>' . $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 . '->' . $for . ' : Enviado Correctamente';
                     sleep(1);
                 }
                 else{
-                    $cadena = $cadena . '<p>' . $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 . '->' . 'Sin Correo electrónico' . ' : No se ha podido enviar'; 
+                    $cadena = $cadena . '<p>' . $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 . '->' . 'Sin Correo electrónico' . ' : No se ha podido enviar';
                 }
             }
         }
