@@ -116,5 +116,8 @@
     <p>
         La equipación de juego se compra aparte, en la tienda web de New Balance Bm Laguna, y hasta el 31 de octubre de 2024, salvo situación excepcional. Se recibirán instrucciones al respecto en el mail que se envía a los padres junto con el primer justificante de pago del precio de la actividad.
     </p>
+    <p>
+        Se podrá también optar por financiar la cuota de inscripción de la ac􀆟vidad en la página de New Balance, escogiendo en dicha página web la opción que corresponda.
+    </p>
 </body>
 </html>
