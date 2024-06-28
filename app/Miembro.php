@@ -324,9 +324,11 @@ class Miembro extends Model
 
     // esta función devuelve True si el miembro ha pagado la preinscripción en la temporada actual
     public function preinscrito(){
-        $preinscripcion = Tipospago::where('descripcion', 'Preinscripcion')->first();
+        // $preinscripcion = Tipospago::whereNotNull('modalidad')->get(['id'])->toArray();
+        $preinscripcion = Tipospago::whereNotNull('modalidad')->pluck('id')->all();
+        //dd($preinscripcion);
         $pago = $this->pagos->where('temporada_id', Temporada::Tactual()->id)
-                            ->where('tipospago_id', $preinscripcion->id)->first();
+                            ->whereIn('tipospago_id', $preinscripcion)->first();
 
         if (is_null($pago)){
             return False;
