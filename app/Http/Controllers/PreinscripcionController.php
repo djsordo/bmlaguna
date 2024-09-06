@@ -646,7 +646,7 @@ class PreinscripcionController extends Controller
                 $pago->temporada_id = $miembro->temporada_id;
                 $pago->miembro_id = $miembro->miembro_id;
                 $pago->nRecibo = $miembro -> nRecibo;
-                $pago->tipospago_id = Tipospago::where('descripcion', 'Inscripción')->first()->id;
+                $pago->tipospago_id = Tipospago::where('descripcion', 'Inscripción Total')->first()->id;
                 if (!is_null($miembro->cuota()->f_plazo_insc)){
                     $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_insc) );
                 }
