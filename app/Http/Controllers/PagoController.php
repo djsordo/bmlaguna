@@ -102,11 +102,15 @@ class PagoController extends Controller
                            ->where(DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"), "like",  "%$textoBusqueda%");
         }
 
-        $totalPagos = $pagos->sum('pagos.importe');
-
         $pagos = $pagos->select('pagos.miembro_id', 'pagos.temporada_id')->groupBy('pagos.miembro_id', 'pagos.temporada_id');
 
         $pagos = $pagos->paginate(10);
+
+        $totalPagos = 0;
+        foreach ($pagos as $pago){
+            $totalPagos += $pago->sumPagado();
+
+        }
 
         $path = $request->url().'?temporada_id='.$tempActual_id.'&nombre='.$textoBusqueda. '&equipo_id='.$equipoActual_id. '&genero_id='.$genActual_id;
 
