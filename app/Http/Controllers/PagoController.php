@@ -103,11 +103,13 @@ class PagoController extends Controller
         }
 
         $totalPagos = 0;
+        /* dd($pagos->get()->where('estado', 'Pagado')); */
         foreach ($pagos->get()->where('estado', 'Pagado') as $pago){
-            $totalPagos += $pago->sumPagado();
+            /* $totalPagos += $pago->sumPagado(); */
+            $totalPagos += $pago->importe;
 
         }
-
+        /* dd($totalPagos); */
         $pagos = $pagos->select('pagos.miembro_id', 'pagos.temporada_id')->groupBy('pagos.miembro_id', 'pagos.temporada_id');
         $pagos = $pagos->paginate(10);
 
