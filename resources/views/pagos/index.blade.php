@@ -64,10 +64,10 @@
             <span id="totalPagos" class="black-text">{{ $totalPagos }}</span>
         </div>
         <div class="col s4">
-            @if (!is_null($totalAPagar))
+            <!-- @if (!is_null($totalAPagar)) -->
                 <label for="totalAPagar">Total a pagar:</label><br>
                 <span id="totalAPagar" class="black-text">{{ $totalAPagar }}</span>
-            @endif
+            <!-- @endif -->
         </div>
     </div>
 

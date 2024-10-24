@@ -84,7 +84,7 @@ class PagoController extends Controller
                 $equipo = Equipo::find($equipoActual_id);
                 $nombreEquipo = $equipo->categoria->descripcion.'-'.$equipo->genero->descripcion.'-'.$equipo->nombre;
                 $nJugadores = $equipo->jugadores->count();
-                $totalAPagar = ($equipo->categoria->precio_inscripcion)*$nJugadores;
+                /* $totalAPagar = ($equipo->categoria->precio_inscripcion)*$nJugadores; */
             }
             else{
                 $pagos = $pagos->whereNotExists(function ($query) use ($tempActual_id) {
@@ -93,9 +93,9 @@ class PagoController extends Controller
                             ->join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')
                             ->whereRaw('pagos.miembro_id = equipo_funcione_miembro.miembro_id and equipos.temporada_id = ' . $tempActual_id);
                 });
-
             }
         }
+        $totalAPagar = $pagos->sum('importe');
 
         if (!is_null($textoBusqueda)){
             $pagos = $pagos->join('miembros', 'miembros.id', '=', 'pagos.miembro_id')
