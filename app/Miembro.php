@@ -510,19 +510,28 @@ class Miembro extends Model
     /* Devuelve los equipos en los que ha estado como jugador o entrenador, delegado en la temporada */
     public function equipoTemp($tempSel){
         $retorno = collect([]);
+//dd($this->funciones->where('descripcion', '!=', 'familiar'));
+        foreach ($this->funciones->where('descripcion', '!=', 'familiar') as $funcion){
 
-        foreach ($this->funciones as $funcion){
-            $equipo = Equipo::find($funcion->pivot->equipo_id);
-            $categoria = Categoria::find($equipo{'categoria_id'});
-            $genero = Genero::find($equipo{'genero_id'});
-            $temporada = Temporada::find($equipo{'temporada_id'});
+            $equipo = Equipo::find($funcion->pivot->equipo_id) ?? null;
+            $categoria = Categoria::find($equipo{'categoria_id'}) ?? null;
+            $genero = Genero::find($equipo{'genero_id'}) ?? null;
+            $temporada = Temporada::find($equipo{'temporada_id'}) ?? null;
 
-            if (($funcion->descripcion != 'familiar') && ($temporada->id == $tempSel->id))  {
-                $retorno->push([ 'id'=>$equipo->id,
-                                 'equipo'=>$equipo->nombre,
-                                 'categoria'=>$categoria->descripcion,
-                                 'genero'=>$genero->descripcion,
-                                 'funcion'=>$funcion->descripcion]);
+            //if (($funcion->descripcion != 'familiar') && ($temporada->id == $tempSel->id))  {
+//dd($tempSel->id);
+            if (isset($temporada)){
+                if ($temporada->id == $tempSel->id)  {
+                    //dd($funcion->descripcion);
+                                    $retorno->push([
+                                        'id'=>$equipo->id,
+                                        'equipo'=>$equipo->nombre,
+                                        'categoria'=>$categoria->descripcion,
+                                        'genero'=>$genero->descripcion,
+                                        'funcion'=>$funcion->descripcion
+                                                    ]);
+                                }
+
             }
         }
         /* dd($retorno); */
@@ -543,7 +552,7 @@ class Miembro extends Model
             /* Se mira la categoría */
             $totalAPagar = $this->categoria($temporada->temporada)->precio_inscripcion;
         }
-        return [$this->pagos->where('temporada_id', $temporada->id)->sum('importe'), $totalAPagar];
+        return [$this->pagos->where('temporada_id', $temporada->id)->where('estado', 'Pagado')->sum('importe'), $totalAPagar];
 
     }
 
