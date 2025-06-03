@@ -46,7 +46,7 @@
     </table>
 
     <p>
-    Esta es la tabla de cuotas para la temporada 23-24:
+    Esta es la tabla de cuotas para la temporada 25-26:
     </p>
     <table width="100%">
         <tr>
