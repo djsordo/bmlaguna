@@ -76,18 +76,18 @@
     </p>
     <ul>
         <li>
-            <b>Pago en 3 recibos.</b> Solo para los que se inscriban hasta el 15 de julio de 2024. Los pagos se realizarán de la siguiente forma:
+            <b>Pago en 3 recibos.</b> Solo para los que se inscriban hasta el 15 de julio de 2025. Los pagos se realizarán de la siguiente forma:
             <ul>
-                <li><b>Primer pago</b>, a continuación de la inscripción, y con fecha máxima el <b>15 de julio de 2024</b>.</li>
+                <li><b>Primer pago</b>, a continuación de la inscripción, y con fecha máxima el <b>15 de julio de 2025</b>.</li>
                 <li><b>Segundo pago</b>, con fecha máxima el <b>15 de octubre de 2025</b>.</li>
-                <li><b>Tercer pago</b>, con fecha máxima el <b>15 de enero de 2025</b>.</li>
+                <li><b>Tercer pago</b>, con fecha máxima el <b>15 de enero de 2026</b>.</li>
             </ul>
         </li>
         <li>
             <b>Pago en 2 recibos.</b> Los pagos se realizarán de la siguiente forma:
             <ul>
                 <li><b>Primer pago</b>, a continuación de la inscripción.</li>
-                <li><b>Segundo pago</b>, con fecha máxima el <b>15 de enero de 2025</b>.</li>
+                <li><b>Segundo pago</b>, con fecha máxima el <b>15 de enero de 2026</b>.</li>
             </ul>
         </li>
         <li>
