@@ -278,17 +278,6 @@
                             </label>
                         </div>
                     </div>
-                    <div class="col s12">
-                        <div class="col s11">
-                            Modalidad de pago en la web de New Balance (a pagar en el momento de encargar la equipación).
-                        </div>
-                        <div class="col s1">
-                            <label>
-                                <input name="importePago" type="radio" value="0" required/>
-                                <span></span>
-                            </label>
-                        </div>
-                    </div>
 
                     <div class="col s12">
                         <p class="flow-text">AVISO:</p>

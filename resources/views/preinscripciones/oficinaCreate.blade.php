@@ -269,17 +269,6 @@
                         </div>
                     </div>
                     <div class="col s12">
-                        <div class="col s11">
-                            Modalidad de pago en la web de New Balance (a pagar en el momento de encargar la equipación).
-                        </div>
-                        <div class="col s1">
-                            <label>
-                                <input name="importePago" type="radio" value="0" required/>
-                                <span></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col s12">
                         <p class="flow-text">AVISO:</p>
                         <p align="justify">Los <b>pagos de los recibos se deben realizar convenientemente y en su fecha</b>. De no ser así, se procederá al bloqueo de la ficha federativa del jugador hasta que se solucione el problema.</p>
                         <p align="justify">Para poder solventar cualquier situación especial o incidencia con respecto al pago de la cuota, contactar con el Club por correo a la dirección bmnlaguna@gmail.com, o personalmente en la oficina.</p>
