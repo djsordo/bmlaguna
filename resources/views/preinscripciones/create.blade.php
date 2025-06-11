@@ -247,7 +247,7 @@
 
                     <div class="col s12">
                         <div class="col s11">
-                            Modalidad de pago en 3 recibos (ver tabla de cuotas para la temporada 24-25 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
+                            Modalidad de pago en 3 recibos (ver tabla de cuotas para la temporada 25-26 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
                         </div>
                         <div class="col s1">
                             <label>
@@ -258,7 +258,7 @@
                     </div>
                     <div class="col s12">
                         <div class="col s11">
-                            Modalidad de pago en 2 recibos (ver tabla de cuotas para la temporada 24-25 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
+                            Modalidad de pago en 2 recibos (ver tabla de cuotas para la temporada 25-26 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
                         </div>
                         <div class="col s1">
                             <label>
@@ -269,7 +269,7 @@
                     </div>
                     <div class="col s12">
                         <div class="col s11">
-                            Modalidad de pago en 1 recibo (ver tabla de cuotas para la temporada 24-25 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
+                            Modalidad de pago en 1 recibo (ver tabla de cuotas para la temporada 25-26 en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>).
                         </div>
                         <div class="col s1">
                             <label>
