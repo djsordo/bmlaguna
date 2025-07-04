@@ -373,13 +373,14 @@ class PreinscripcionController extends Controller
 
         $miembro->save();
 
+        // Comentado porque no funciona en el servidor de producción 4 de julio de 2025
         // 2.- Enviar correo para el pago
-         $for = $request->input('email');
+         /* $for = $request->input('email');
 
         Mail::send('emails.preinsConf', compact('nPreinscripcion', 'texto'), function($msj) use ($for){
             $msj->subject('Instrucciones para el pago de la preinscripción');
             $msj->to($for);
-        });
+        }); */
 
         return view("preinscripciones.salida", compact('nPreinscripcion', 'vPago'));
     }
@@ -487,15 +488,17 @@ class PreinscripcionController extends Controller
 
         $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
 
+// Esto lo voy a comentar porque no funciona en el servidor de producción 4 de julio de 2025
         // Envío de correo con el recibo adjunto
-        $for = $preinscripcion->email;
+/*         $for = $preinscripcion->email;
         $nPreinscripcion = $preinscripcion->nPreinscripcion;
 
         Mail::send('emails.preinsPagada', compact('nPreinscripcion'), function($msj) use ($for, $pdf){
             $msj->subject('Preinscripción Club Balonmano Laguna');
             $msj->to($for);
             $msj->attachData($pdf->output(), 'Recibo.pdf');
-        });
+        }); */
+// -----------------------------------------------------------------------
 
         return redirect()->back()->with('status', 'Recibo enviado correctamente');
     }
@@ -766,34 +769,19 @@ class PreinscripcionController extends Controller
         if (!is_null($request->input('enviar'))){
 
             // Envío de correo con el recibo adjunto
-            //$pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
-
             $for = $miembro->email;
             $nPreinscripcion = $miembro->nPreinscripcion;
-
+            // Commentado porque no funciona en el servidor de producción 4 de julio de 2025
             // 2.- Enviar correo para el pago
-             $for = $request->input('email');
+/*              $for = $request->input('email');
 
             Mail::send('emails.preinsConf', compact('nPreinscripcion', 'texto'), function($msj) use ($for){
                 $msj->subject('Instrucciones para el pago de la inscripción');
                 $msj->to($for);
             });
-
-            //Mail::send('emails.preinsPagada', compact('nPreinscripcion'), function($msj) use ($for, $pdf){
-            //Mail::send('emails.preinsPagada', compact('nPreinscripcion'), function($msj) use ($for){
-            //    $msj->subject('Recibo del pago de la preinscripción');
-            //    $msj->to($for);
-                //$msj->attachData($pdf->output(), 'Recibo.pdf');
-            //});
-        }
-
-/*         if (!is_null($request->input('imprimir'))){
-            // Mostrar el pdf del recibo.
-            $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
-            return $pdf->download('Recibo.pdf');
-
-        }
  */
+        }
+
         return redirect()->route('miembros')->with('status', 'Preinscripción realizada correctamente');
     }
 
