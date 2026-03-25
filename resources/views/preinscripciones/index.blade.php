@@ -168,27 +168,15 @@
                                 <label for="f_pago">Fecha de pago:</label><br>
                                 <span id="f_pago" class="black-text">{{ (!is_null($preinscripcion->f_pago)) ? date('d-m-Y', strtotime($preinscripcion->f_pago) ) : ' - ' }}</span>
                             </div>
-                            <div class="col s1">
+                            <div class="col s2">
                                 <label for="importePago">Importe:</label><br>
                                 <span id="importePago" class="black-text">{{ (!is_null($preinscripcion->importePago)) ? $preinscripcion->importePago : ' - ' }}</span>
-                            </div>
-                            <div class="col s2">
-                                <label for="modalidad">Modalidad de pago:</label><br>
-                                @if ($preinscripcion->modalidad_pago == 0)
-                                    <span id="modalidad" class="black-text">New balance</span>
-                                @elseif ($preinscripcion->modalidad_pago == 1)
-                                    <span id="modalidad" class="black-text">Pago total</span>
-                                @elseif ($preinscripcion->modalidad_pago == 2)
-                                    <span id="modalidad" class="black-text">2 Cuotas</span>
-                                @elseif ($preinscripcion->modalidad_pago == 3)
-                                    <span id="modalidad" class="black-text">3 Cuotas</span>
-                                @endif
                             </div>
                             <div class="col s2">
                                 <label for="nif">N.I.F. :</label><br>
                                 <span id="nif" class="black-text">{{ (!is_null($preinscripcion->nif)) ? $preinscripcion->nif : ' - ' }}</span>
                             </div>
-                            <div class="col s3">
+                            <div class="col s4">
                                 <label for="nom">Nombre:</label><br>
                                 <span id="nom" class="black-text">{{ $preinscripcion->nombre.' '.$preinscripcion->apellido1.' '.$preinscripcion->apellido2 }}</span>
                             </div>

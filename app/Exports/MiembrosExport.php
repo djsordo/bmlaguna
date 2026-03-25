@@ -47,7 +47,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
     private $campos;
     private $posFecha;
     private $baja;
-
+   
     public function __construct($criterios, $campos){
         /* dd($criterios);  */
         $this->temporada_id = $criterios['temporada_id'];
@@ -151,7 +151,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
 
             $campos[$i] = 'Responsable 1';
             $i++;
-
+    
             $campos[$i] = 'Responsable 2';
             $i++;
         }
@@ -232,7 +232,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
 
         if (Arr::first($this->campos, function ($value, $key) {
             return $value == 'checkFNac';})){
-
+            
             if (!is_null($miembro->f_nacimiento)){
                 $campos[$i] = Date::dateTimeToExcel(DateTime::createFromFormat('Y-m-d', $miembro->f_nacimiento));
             }
@@ -297,7 +297,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
                     $telef = $telef.'-'.$telefono->telefono;
                 }
             }
-
+        
             $campos[$i] = $telef;
             $i++;
         }
@@ -308,13 +308,13 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
             $correo = '';
             foreach($emails as $email){
                 if ($correo == ''){
-                    $correo = $email->email;
+                    $correo = $email->email;    
                 }
                 else{
                     $correo = $correo.'-'.$email->email;
                 }
             }
-
+        
             $campos[$i] = $correo;
             $i++;
         }
@@ -325,7 +325,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
 
             $responsable1 = '';
             $responsable2 = '';
-
+    
             if (!is_null($miembro->responsable1_id)){
                 $responsable1V = Miembro::find($miembro->responsable1_id);
                 $responsable1 = $responsable1V->nombre.' '.$responsable1V->apellido1.' '.$responsable1V->apellido2;
@@ -334,7 +334,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
                 $responsable2V = Miembro::find($miembro->responsable2_id);
                 $responsable2 = $responsable2V->nombre.' '.$responsable2V->apellido1.' '.$responsable2V->apellido2;
             }
-
+            
             $campos[$i] = $responsable1;
             $i++;
             $campos[$i] = $responsable2;
@@ -388,7 +388,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
                 else{
                     $tempElegida = Temporada::find($this->temporada_id);
                 }
-
+    
                 $campos[$i] = '';
                 foreach ($miembro->equipoTemp($tempElegida) as $equipo){
                     if (is_null($this->equipo_id) || ($this->equipo_id == $equipo['id']) )
@@ -442,7 +442,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
             $i++;
         }
         /* Fin Pagos */
-
+        
         return $campos;
     }
 
@@ -473,7 +473,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
 
 
         // Criterios
-
+                
         if (!is_null($this->baja)){
             // Miembros dados de baja
             $miembros = Miembro::whereNotNull('f_baja');
@@ -487,8 +487,8 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
             $miembros = $miembros->join('equipo_funcione_miembro', 'miembros.id', '=', 'equipo_funcione_miembro.miembro_id')->
                             join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')->
                             where('equipos.temporada_id', $this->temporada_id);
-            // Equipo
-            if (!is_null($this->equipo_id)){
+            // Equipo                            
+            if (!is_null($this->equipo_id)){                            
                 $miembros = $miembros->where('equipos.id', $this->equipo_id);
             }
 
@@ -502,7 +502,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
             $miembros = $miembros->whereYear('f_nacimiento','>=', $catElegida->rangoAnnos($tempElegida)[0])->
                                 whereYear('f_nacimiento','<=', $catElegida->rangoAnnos($tempElegida)[1]);
         }
-
+        
         // Género
         if (!is_null($this->genero_id)){
             $miembros = $miembros->where('miembros.genero_id', $this->genero_id);
@@ -517,8 +517,8 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
         $miembros = $miembros->distinct()->get();
 
         return $miembros;
-
-    }
+       
+    } 
 
     public function drawings()
         {
@@ -556,7 +556,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
                     $event->sheet->setCellValue('B2', 'Listado de miembros del club');
                 }
             }
-
+            
             $event->sheet->mergeCells('B2:E3');
             $event->sheet->getStyle('B2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $event->sheet->getStyle('B2')->getFont()->setBold(true);
@@ -581,7 +581,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
                 $event->sheet->setCellValue('H1', 'Temporada: Todas');
             }
             /* Fin Temporada */
-            /* Categoría */
+            /* Categoría */            
             $categoria_id = $event->sheet->getCell('C1')->getValue();
             $event->sheet->setCellValue('C1', '');
             $categoria = Categoria::find($categoria_id);
@@ -592,7 +592,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
                 $event->sheet->setCellValue('H2', 'Categoría: Todas');
             }
             /* Fin Categoría */
-            /* Género */
+            /* Género */            
             $genero_id = $event->sheet->getCell('D1')->getValue();
             $event->sheet->setCellValue('D1', '');
             $genero = Genero::find($genero_id);
@@ -603,7 +603,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
                 $event->sheet->setCellValue('H3', 'Género: Todos');
             }
             /* Fin Género */
-            /* Texto Nombre*/
+            /* Texto Nombre*/            
             $nombre = $event->sheet->getCell('E1')->getValue();
             $event->sheet->setCellValue('E1', '');
             if ($nombre != ''){

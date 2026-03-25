@@ -8,8 +8,7 @@
     </div>
 
     <div class="col s6">
-        @component('auth.login')
-        @endcomponent
+        @include('auth.login_form')
     </div>
 </div>
 @endsection

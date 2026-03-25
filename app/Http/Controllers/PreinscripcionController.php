@@ -234,153 +234,27 @@ class PreinscripcionController extends Controller
         $miembro->obsAlergia = $request->input('obsAlergia');
         $miembro->obsOtras = $request->input('obsOtras');
 
-        $temporada = Temporada::find($miembro->temporada_id);
-        $miembro->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
-
-        // Si la preinscripción es de un jugador nuevo, añadir este a los miembros
-        if (is_null($miembro->miembro_id)){
-            // Es nuevo. Lo metemos en la base de datos.
-            $nuevoMiembro = Miembro::nuevo($miembro);
-            $miembro->miembro_id = $nuevoMiembro->id;
-        }
-
-        // Importe de la cuota (modalidad de la cuota) 1, 2 y 3 número de plazos; 0 New Balance
+        // Importe de la cuota
         $vPago = $request->input('importePago');
-        $miembro->modalidad_pago = $vPago;
-        if ($vPago == 1){
+        if ($vPago == 0){
             // Ver la cuota correspondiente
-            $miembro->importePago = $miembro->cuota()->precio_inscripcion;
-
-            // Si conocemos el miembro Generamos el pago correspondiente
-            if (!is_null($miembro->miembro_id)){
-                $pago = new Pago();
-
-                $pago->importe = $miembro->cuota()->precio_inscripcion;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = $miembro -> nRecibo;
-                $pago->tipospago_id = Tipospago::where('descripcion', 'Inscripción Total')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_insc)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_insc) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-            }
-            $plazo1 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_insc));
-            $texto = "{$miembro->cuota()->precio_inscripcion} euros en un sólo pago antes del {$plazo1}.";
+            $vPago = $miembro->cuota();
         }
-        elseif ($vPago == 2){
-            $miembro->importePago = $miembro->cuota()->precio_2c1;
-
-            // Si conocemos el miembro Generamos el pago correspondiente
-            if (!is_null($miembro->miembro_id)){
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_2c1;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = $miembro -> nRecibo;
-                $pago->tipospago_id = Tipospago::where('descripcion', '2 Plazos 1ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_2c1)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_2c1) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_2c2;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
-                $pago->tipospago_id = Tipospago::where('descripcion', '2 Plazos 2ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_2c2)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_2c2) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-            }
-
-            $plazo1 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_2c1));
-            $plazo2 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_2c2));
-            $texto = "{$miembro->cuota()->precio_inscripcion2c} euros en dos cuotas. La primera será de {$miembro->cuota()->precio_2c1} euros a pagar antes del {$plazo1}. La segunda será de {$miembro->cuota()->precio_2c2} euros a pagar antes del {$plazo2}";
+        else {
+            $vPago = $miembro->cuota()/2;
         }
-        elseif ($vPago == 3){
-            $miembro->importePago = $miembro->cuota()->precio_3c1;
 
-            // Si conocemos el miembro Generamos el pago correspondiente
-            if (!is_null($miembro->miembro_id)){
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_3c1;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = $miembro -> nRecibo;
-                $pago->tipospago_id = Tipospago::where('descripcion', '3 Plazos 1ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_3c1)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_3c1) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_3c2;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
-                $pago->tipospago_id = Tipospago::where('descripcion', '3 Plazos 2ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_3c2)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_3c2) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_3c3;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
-                $pago->tipospago_id = Tipospago::where('descripcion', '3 Plazos 3ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_3c3)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_3c3) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-            }
-            $plazo1 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_3c1));
-            $plazo2 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_3c2));
-            $plazo3 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_3c3));
-            $texto = "{$miembro->cuota()->precio_inscripcion3c} euros en tres cuotas. La primera será de {$miembro->cuota()->precio_3c1} antes del {$plazo1}, la segunda será de {$miembro->cuota()->precio_3c2} antes del {$plazo2}, y la tercera {$miembro->cuota()->precio_3c3} antes del {$plazo3}.";
-
-        }
-        else{
-            $miembro->importePago = $miembro->cuota()->precio_inscripcion;
-
-            // Si conocemos el miembro Generamos el pago correspondiente
-            if (!is_null($miembro->miembro_id)){
-                $pago = new Pago();
-
-                $pago->importe = $miembro->cuota()->precio_inscripcion;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = $miembro -> nRecibo;
-                $pago->tipospago_id = Tipospago::where('descripcion', 'New Balance')->first()->id;
-                //$pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_insc) );
-                $pago->estado = 'Pendiente';
-                $pago->save();
-            }
-
-            $texto = "{$miembro->cuota()->precio_inscripcion} euros que se abonarán en la tienda de New Balance.";
-
-        }
+        $miembro->importePago = $vPago;
 
         $miembro->save();
 
-        // Comentado porque no funciona en el servidor de producción 4 de julio de 2025
         // 2.- Enviar correo para el pago
-         /* $for = $request->input('email');
+         $for = $request->input('email');
 
-        Mail::send('emails.preinsConf', compact('nPreinscripcion', 'texto'), function($msj) use ($for){
+        Mail::send('emails.preinsConf', compact('nPreinscripcion', 'vPago'), function($msj) use ($for){
             $msj->subject('Instrucciones para el pago de la preinscripción');
             $msj->to($for);
-        }); */
+        });
 
         return view("preinscripciones.salida", compact('nPreinscripcion', 'vPago'));
     }
@@ -427,16 +301,7 @@ class PreinscripcionController extends Controller
      */
     public function destroy($id)
     {
-        // Buscamos la preinscripción
         $preinscripcion = Preinscripcion::find($id);
-
-        // Borramos los pagos que se hayan generado
-        $pagos = Pago::where('pagos.miembro_id', $preinscripcion->miembro_id)->
-        where('pagos.temporada_id', $preinscripcion->temporada_id)->
-        join('tipospagos', 'tipospagos.id', '=', 'pagos.tipospago_id')->
-        where('tipospagos.modalidad', '=', $preinscripcion->modalidad_pago)->delete();
-
-        // Borramos la Preinscripcion
         $preinscripcion->delete();
 
         return redirect()->back()->with('status', 'Preinscripción borrada');
@@ -454,26 +319,18 @@ class PreinscripcionController extends Controller
         $preinscripcion->estado = 'Pagado';
         $preinscripcion->f_pago = date('Y-m-d', time() );
 
-        // Buscamos el pago que tenga el número de recibo y lo marcamos como pagada.
-        $pago = Pago::where('nRecibo', '=', $preinscripcion->nRecibo)->first();
-        $pago->f_pago = date('Y-m-d');
-        $pago->estado = 'Pagado';
-        $pago->save();
-
-        //dd($pago);
-
-        //$temporada = Temporada::find($preinscripcion->temporada_id);
-        //$preinscripcion->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
+        $temporada = Temporada::find($preinscripcion->temporada_id);
+        $preinscripcion->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
 
         // Si la preinscripción es de un jugador nuevo, añadir este a los miembros
-        /*if (is_null($preinscripcion->miembro_id)){
+        if (is_null($preinscripcion->miembro_id)){
             // Es nuevo. Lo metemos en la base de datos.
             $miembro = Miembro::nuevo($preinscripcion);
             $preinscripcion->miembro_id = $miembro->id;
-        }*/
+        }
 
         // añadimos el pago
-        /*$pago = new Pago();
+        $pago = new Pago();
 
         $pago->importe = $preinscripcion->importePago;
         $pago->temporada_id = $preinscripcion->temporada_id;
@@ -482,23 +339,21 @@ class PreinscripcionController extends Controller
         $pago->tipospago_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
         $pago->f_pago = date('Y-m-d', strtotime($preinscripcion->f_pago) );
 
-        $pago->save();*/
+        $pago->save();
 
         $preinscripcion->save();
 
         $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
 
-// Esto lo voy a comentar porque no funciona en el servidor de producción 4 de julio de 2025
         // Envío de correo con el recibo adjunto
-/*         $for = $preinscripcion->email;
+        $for = $preinscripcion->email;
         $nPreinscripcion = $preinscripcion->nPreinscripcion;
 
         Mail::send('emails.preinsPagada', compact('nPreinscripcion'), function($msj) use ($for, $pdf){
             $msj->subject('Preinscripción Club Balonmano Laguna');
             $msj->to($for);
             $msj->attachData($pdf->output(), 'Recibo.pdf');
-        }); */
-// -----------------------------------------------------------------------
+        });
 
         return redirect()->back()->with('status', 'Recibo enviado correctamente');
     }
@@ -515,14 +370,12 @@ class PreinscripcionController extends Controller
         $preinscripcion->save();
 
         // Borrar el pago de la preinscripción
-        //$tipopagopre_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
+        $tipopagopre_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
         $pago = Pago::where('miembro_id', $preinscripcion->miembro_id)->
                 where('temporada_id', $preinscripcion->temporada_id)->
-                where('nRecibo', $preinscripcion->nRecibo)->first();
+                where('tipospago_id', $tipopagopre_id)->first();
 
-        $pago->estado = 'Pendiente';
-        $pago->f_pago = null;
-        $pago->save();
+        $pago->delete();
 
         return redirect()->back()->with('status', 'Pago deshecho correctamente');
     }
@@ -609,10 +462,10 @@ class PreinscripcionController extends Controller
         $miembro->miembro_id = $request->input('miembro_id');
 
         $miembro->temporada_id = Temporada::actual()->id;
-        $miembro->estado = 'Pendiente de Pago';
+        $miembro->estado = 'Pagado';
 
         $miembro->f_preinscripcion = date('Y-m-d', time() );
-        //$miembro->f_pago = date('Y-m-d', time() );
+        $miembro->f_pago = date('Y-m-d', time() );
         $miembro->nPreinscripcion = $nPreinscripcion;
 
         $miembro->obsEnfermedad = $request->input('obsEnfermedad');
@@ -626,141 +479,31 @@ class PreinscripcionController extends Controller
         $temporada = Temporada::find($miembro->temporada_id);
         $miembro->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
 
-
-        // Si la preinscripción es de un jugador nuevo, añadir este a los miembros
-        if (is_null($miembro->miembro_id)){
-            // Es nuevo. Lo metemos en la base de datos.
-            $nuevoMiembro = Miembro::nuevo($miembro);
-            $miembro->miembro_id = $nuevoMiembro->id;
-        }
-
-        // Importe de la cuota (modalidad de la cuota) 1, 2 y 3 número de plazos; 0 New Balance
+        // Importe de la cuota
         $vPago = $request->input('importePago');
-        $miembro->modalidad_pago = $vPago;
-        if ($vPago == 1){
+        if ($vPago == 0){
             // Ver la cuota correspondiente
-            $miembro->importePago = $miembro->cuota()->precio_inscripcion;
-
-            // Si conocemos el miembro Generamos el pago correspondiente
-            if (!is_null($miembro->miembro_id)){
-                $pago = new Pago();
-
-                $pago->importe = $miembro->cuota()->precio_inscripcion;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = $miembro -> nRecibo;
-                $pago->tipospago_id = Tipospago::where('descripcion', 'Inscripción Total')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_insc)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_insc) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-            }
-
-            $plazo1 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_insc));
-            $texto = "{$miembro->cuota()->precio_inscripcion} euros en un sólo pago antes del {$plazo1}.";
+            $vPago = $miembro->cuota();
         }
-        elseif ($vPago == 2){
-            $miembro->importePago = $miembro->cuota()->precio_2c1;
-
-            // Si conocemos el miembro Generamos el pago correspondiente
-            if (!is_null($miembro->miembro_id)){
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_2c1;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = $miembro -> nRecibo;
-                $pago->tipospago_id = Tipospago::where('descripcion', '2 Plazos 1ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_2c1)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_2c1) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_2c2;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
-                $pago->tipospago_id = Tipospago::where('descripcion', '2 Plazos 2ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_2c2)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_2c2) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-            }
-
-            $plazo1 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_2c1));
-            $plazo2 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_2c2));
-            $texto = "{$miembro->cuota()->precio_inscripcion2c} euros en dos cuotas. La primera será de {$miembro->cuota()->precio_2c1} euros a pagar antes del {$plazo1}. La segunda será de {$miembro->cuota()->precio_2c2} euros a pagar antes del {$plazo2}";
+        else {
+            $vPago = $miembro->cuota()/2;
         }
-        elseif ($vPago == 3){
-            $miembro->importePago = $miembro->cuota()->precio_3c1;
 
-            // Si conocemos el miembro Generamos el pago correspondiente
-            if (!is_null($miembro->miembro_id)){
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_3c1;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = $miembro -> nRecibo;
-                $pago->tipospago_id = Tipospago::where('descripcion', '3 Plazos 1ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_3c1)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_3c1) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
+        $miembro->importePago = $vPago;
 
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_3c2;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
-                $pago->tipospago_id = Tipospago::where('descripcion', '3 Plazos 2ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_3c2)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_3c2) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
+        $miembro->save();
 
-                $pago = new Pago();
-                $pago->importe = $miembro->cuota()->precio_3c3;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
-                $pago->tipospago_id = Tipospago::where('descripcion', '3 Plazos 3ª Cuota')->first()->id;
-                if (!is_null($miembro->cuota()->f_plazo_3c3)){
-                    $pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_3c3) );
-                }
-                $pago->estado = 'Pendiente';
-                $pago->save();
-            }
-            $plazo1 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_3c1));
-            $plazo2 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_3c2));
-            $plazo3 = date('d-m-Y', strtotime($miembro->cuota()->f_plazo_3c3));
-            $texto = "{$miembro->cuota()->precio_inscripcion3c} euros en tres cuotas. La primera será de {$miembro->cuota()->precio_3c1} euros a pagar antes del {$plazo1}, la segunda será de {$miembro->cuota()->precio_3c2} euros a pagar antes del {$plazo2}, y la tercera {$miembro->cuota()->precio_3c3} euroa a pagar antes del {$plazo3}.";
+        // añadimos el pago
+        $pago = new Pago();
 
-        }
-        else{
-            $miembro->importePago = $miembro->cuota()->precio_inscripcion;
+        $pago->importe = $vPago;
+        $pago->temporada_id = $miembro->temporada_id;
+        $pago->miembro_id = $miembro->miembro_id;
+        $pago->nRecibo = $miembro->nRecibo;
+        $pago->tipospago_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
+        $pago->f_pago = date('Y-m-d', strtotime($miembro->f_pago) );
 
-            // Si conocemos el miembro Generamos el pago correspondiente
-            if (!is_null($miembro->miembro_id)){
-                $pago = new Pago();
-
-                $pago->importe = $miembro->cuota()->precio_inscripcion;
-                $pago->temporada_id = $miembro->temporada_id;
-                $pago->miembro_id = $miembro->miembro_id;
-                $pago->nRecibo = $miembro -> nRecibo;
-                $pago->tipospago_id = Tipospago::where('descripcion', 'New Balance')->first()->id;
-                //$pago->f_vencimiento = date('Y-m-d', strtotime($miembro->cuota()->f_plazo_insc) );
-                $pago->estado = 'Pendiente';
-                $pago->save();
-            }
-
-            $texto = "{$miembro->cuota()->precio_inscripcion} euros que se abonarán en la tienda de New Balance.";
-
-        }
+        $pago->save();
 
         $miembro->save();
 
@@ -769,19 +512,25 @@ class PreinscripcionController extends Controller
         if (!is_null($request->input('enviar'))){
 
             // Envío de correo con el recibo adjunto
+            $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
+
             $for = $miembro->email;
             $nPreinscripcion = $miembro->nPreinscripcion;
-            // Commentado porque no funciona en el servidor de producción 4 de julio de 2025
-            // 2.- Enviar correo para el pago
-/*              $for = $request->input('email');
 
-            Mail::send('emails.preinsConf', compact('nPreinscripcion', 'texto'), function($msj) use ($for){
-                $msj->subject('Instrucciones para el pago de la inscripción');
+            Mail::send('emails.preinsPagada', compact('nPreinscripcion'), function($msj) use ($for, $pdf){
+                $msj->subject('Recibo del pago de la preinscripción');
                 $msj->to($for);
+                $msj->attachData($pdf->output(), 'Recibo.pdf');
             });
- */
         }
 
+/*         if (!is_null($request->input('imprimir'))){
+            // Mostrar el pdf del recibo.
+            $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
+            return $pdf->download('Recibo.pdf');
+
+        }
+ */
         return redirect()->route('miembros')->with('status', 'Preinscripción realizada correctamente');
     }
 

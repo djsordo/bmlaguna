@@ -14,3 +14,6 @@ yarn-error.log
 .phpunit.result.cache
 /.env
 docs
+.cursor
+.cursor/rules
+database/dumps/*.sql

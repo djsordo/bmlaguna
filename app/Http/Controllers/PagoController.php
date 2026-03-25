@@ -75,7 +75,7 @@ class PagoController extends Controller
         if (!is_null($equipoActual_id)){
             if ($equipoActual_id != '0'){
                 $pagos = $pagos->join('equipo_funcione_miembro', 'pagos.miembro_id', '=', 'equipo_funcione_miembro.miembro_id')->
-                                join('funciones', 'funciones.id', '=', 'equipo_funcione_miembro.funcione_id')->
+                                join('funciones', 'funciones.id', '=', 'equipo_funcione_miembro.funcione_id')-> 
                                 join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')->
                                 where('equipos.temporada_id', $tempActual_id)->
                                 where('equipo_funcione_miembro.equipo_id', $equipoActual_id)->
@@ -84,7 +84,7 @@ class PagoController extends Controller
                 $equipo = Equipo::find($equipoActual_id);
                 $nombreEquipo = $equipo->categoria->descripcion.'-'.$equipo->genero->descripcion.'-'.$equipo->nombre;
                 $nJugadores = $equipo->jugadores->count();
-                /* $totalAPagar = ($equipo->categoria->precio_inscripcion)*$nJugadores; */
+                $totalAPagar = ($equipo->categoria->precio_inscripcion)*$nJugadores;
             }
             else{
                 $pagos = $pagos->whereNotExists(function ($query) use ($tempActual_id) {
@@ -93,26 +93,20 @@ class PagoController extends Controller
                             ->join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')
                             ->whereRaw('pagos.miembro_id = equipo_funcione_miembro.miembro_id and equipos.temporada_id = ' . $tempActual_id);
                 });
+
             }
         }
-        $totalAPagar = $pagos->sum('importe');
-
+        
         if (!is_null($textoBusqueda)){
             $pagos = $pagos->join('miembros', 'miembros.id', '=', 'pagos.miembro_id')
                            ->where(DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"), "like",  "%$textoBusqueda%");
         }
 
-        $totalPagos = 0;
-        /* dd($pagos->get()->where('estado', 'Pagado')); */
-        foreach ($pagos->get()->where('estado', 'Pagado') as $pago){
-            /* $totalPagos += $pago->sumPagado(); */
-            $totalPagos += $pago->importe;
+        $totalPagos = $pagos->sum('pagos.importe');
 
-        }
-        /* dd($totalPagos); */
         $pagos = $pagos->select('pagos.miembro_id', 'pagos.temporada_id')->groupBy('pagos.miembro_id', 'pagos.temporada_id');
-        $pagos = $pagos->paginate(10);
 
+        $pagos = $pagos->paginate(10);
 
         $path = $request->url().'?temporada_id='.$tempActual_id.'&nombre='.$textoBusqueda. '&equipo_id='.$equipoActual_id. '&genero_id='.$genActual_id;
 
@@ -146,7 +140,7 @@ class PagoController extends Controller
 
         // // Cuota anual que debe pagar
         // $miembro = Miembro::find($miembro_id);
-
+        
         // $cuota = $miembro->categoria($tempAct->temporada)->precio_inscripcion;
 
         // return view('pagos.create', compact('miembro_id', 'temporadas', 'tipospagos', 'pagos', 'miembro', 'cuota', 'tempAct'));
@@ -167,7 +161,7 @@ class PagoController extends Controller
         // $pago->miembro_id = $request->input('miembro_id');
         // $pago->tipospago_id = $request->input('tipospago_id');
         // $pago->f_pago = date('Y-m-d', strtotime($request->input('f_pago')) );
-
+     
         // $temporada = Temporada::find($pago->temporada_id);
         // $pago->nRecibo = 'R'. $temporada->temporada.'-'.Contador_recibo::sumar($temporada);
 
@@ -196,7 +190,7 @@ class PagoController extends Controller
 
         // // Cuota anual que debe pagar
         // $miembro = Miembro::find($miembro_id);
-
+        
         // $cuota = $miembro->categoria($tempAct->temporada)->precio_inscripcion;
         // if (!is_null($pagos->first())){
         //     $pagado = $pagos->first()->sumPagado();
@@ -277,7 +271,7 @@ class PagoController extends Controller
 
         // // Cuota anual que debe pagar
         // $miembro = Miembro::find($miembro_id);
-
+        
         // $cuota = $miembro->categoria($tempAct->temporada)->precio_inscripcion;
         // if (!is_null($pagos->first())){
         //     $pagado = $pagos->first()->sumPagado();

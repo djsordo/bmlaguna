@@ -12,12 +12,12 @@
         src:local('Cambria') format('truetype');
         font-weight: normal;
         font-style: normal
-    }
-
+    } 
+    
     body { font-family: Cambria, 'Times New Roman', Times, serif;
             font-size:9pt  }
-
-    hr {
+    
+    hr { 
 
         noshade: noshade;
         margin-top: 20px;
@@ -28,7 +28,7 @@
         margin-top: 5px;
         margin-bottom: 5px    }
 
-/*
+/*    
     .texto {
         font-size: 7pt;
         text-align: center;
@@ -68,7 +68,7 @@
         width: 50%;
         float: right;
     }
-
+    
     .izquierda {
         width: 50%;
         float: left;
@@ -84,7 +84,7 @@
     <div class="centrar">
         <img src="images/cabeceraCertFedeReco.jpg" width="80%">
     </div>
-
+    
     <div class="cabecera">
         <b>CERTIFICACIÓN DE APTO/NO APTO PARA LA PRÁCTICA DE BALONMANO</b>
     </div>
@@ -92,7 +92,7 @@
     <div class="cabecera2">
         <b><i>(APTO / NO APTO MÉDICO)</i></b>
     </div>
-
+    
     <hr/>
 
     <div>
@@ -100,11 +100,11 @@
     </div>
 
     <div class="datos">
-        <b>D./Dª</b>&#160;&#160;&#160;&#160;&#160;José Luis Recio Varela
+        <b>D./Dª</b>&#160;&#160;&#160;&#160;&#160;Juan José Marijuan Merino
     </div>
 
     <div class="datos">
-        <div class="izquierda"><b>DNI</b>&#160;&#160;&#160;&#160;&#160;12400737B</div>
+        <div class="izquierda"><b>DNI</b>&#160;&#160;&#160;&#160;&#160;13098787B</div>
         <div class="derecha"><b>CARGO</b>&#160;&#160;&#160;&#160;&#160;Presidente</div>
     </div>
 
@@ -161,7 +161,7 @@
     </div>
     <div class="datos">
         <div class="izquierda"><b>Fecha:</b>&#160;&#160;&#160;&#160;&#160;{{date('d-m-Y')}}</div>
-
+        
         <div class="derecha"><b>Firma y sello:</b></div>
         <br/>
     </div>
