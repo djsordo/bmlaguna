@@ -127,19 +127,48 @@ class EquipoController extends Controller
     }
 
     public function asignar($equipo_id, $miembro_id, $tipo){
-        $funcion = Funcione::where('descripcion',$tipo)->first();
-        $equipo = Equipo::find($equipo_id);
+        $slugsTecnicos = ['primer-entrenador', 'segundo-entrenador', 'delegado'];
+        if (in_array($tipo, $slugsTecnicos, true)) {
+            $descripcion = Funcione::slugADescripcion($tipo);
+            $funcion = Funcione::where('descripcion', $descripcion)->first();
+            if (! $funcion) {
+                abort(404);
+            }
+            $equipo = Equipo::findOrFail($equipo_id);
+            $miembro = Miembro::findOrFail($miembro_id);
+
+            $idTecnico = Funcione::where('descripcion', Funcione::DESC_TECNICO)->value('id');
+            if (! $idTecnico || ! $miembro->funcionesClub()->where('funcione_id', $idTecnico)->exists()) {
+                return redirect()->route('equipos.show', $equipo_id)
+                    ->with('error', 'El miembro debe tener la función Técnico marcada en su ficha de miembro.');
+            }
+
+            $equipo->miembros()->attach($miembro_id, ['funcione_id' => $funcion->id]);
+
+            return redirect()->route('equipos.show', $equipo_id);
+        }
+
+        $descripcion = Funcione::slugADescripcion($tipo);
+        $funcion = Funcione::where('descripcion', $descripcion)->first();
+        if (! $funcion) {
+            abort(404);
+        }
+        $equipo = Equipo::findOrFail($equipo_id);
         $equipo->miembros()->attach($miembro_id, ['funcione_id' => $funcion->id]);
-      
+
         return redirect()->route('equipos.show', $equipo_id);
     }
 
     public function deasignar($equipo_id, $miembro_id, $tipo){
-        $funcion = Funcione::where('descripcion',$tipo)->first();
-        $equipo = Equipo::find($equipo_id);
+        $descripcion = Funcione::slugADescripcion($tipo);
+        $funcion = Funcione::where('descripcion', $descripcion)->first();
+        if (! $funcion) {
+            abort(404);
+        }
+        $equipo = Equipo::findOrFail($equipo_id);
 
         $equipo->miembros()->wherePivot('miembro_id', $miembro_id)
-                           ->wherePivot('funcione_id', $funcion->id)->detach();
+            ->wherePivot('funcione_id', $funcion->id)->detach();
 
         return redirect()->route('equipos.show', $equipo_id);
     }

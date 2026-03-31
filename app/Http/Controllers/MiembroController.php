@@ -124,7 +124,13 @@ class MiembroController extends Controller
 
         $dorsales = range(1,99);
 
-        return view('miembros.create', compact('funciones', 'generos', 'responsables', 'dorsales'));
+        $checksFuncionesClub = [
+            'familiar' => false,
+            'jugador' => false,
+            'tecnico' => false,
+        ];
+
+        return view('miembros.create', compact('funciones', 'generos', 'responsables', 'dorsales', 'checksFuncionesClub'));
     }
 
     /**
@@ -290,6 +296,8 @@ class MiembroController extends Controller
         $equipaciones = $temporada->equipaciones()->get();
         $equipacionesMiembro = $miembro->equipaciones()->get();
 
+        $miembro->load('funcionesClub');
+
         return view('miembros.show', compact('miembro', 'resp1', 'resp2', 'equipaciones', 'equipacionesMiembro'));
     }
 
@@ -325,7 +333,14 @@ class MiembroController extends Controller
 
         $dorsales = range(1,99);
 
-        return view('miembros.edit', compact('funciones', 'generos', 'responsables', 'miembro', 'telefonos', 'emails', 'dorsales'));
+        $miembro->load('funcionesClub');
+        $checksFuncionesClub = [
+            'familiar' => $miembro->funcionesClub->contains('descripcion', 'familiar'),
+            'jugador' => $miembro->funcionesClub->contains('descripcion', 'jugador'),
+            'tecnico' => $miembro->funcionesClub->contains('descripcion', Funcione::DESC_TECNICO),
+        ];
+
+        return view('miembros.edit', compact('funciones', 'generos', 'responsables', 'miembro', 'telefonos', 'emails', 'dorsales', 'checksFuncionesClub'));
     }
 
     /**
@@ -459,6 +474,8 @@ class MiembroController extends Controller
                     ]);
             }
         }
+
+        $miembro->sincronizarFuncionesClubDesdeFormulario($request);
 
         // return redirect()->route('miembros')->with('status', 'Miembro actualizado correctamente');
         // Redireccionamos a la URL anterior

@@ -30,6 +30,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('equipos', 'EquipoController');
 
+    Route::get('tecnicos', 'TecnicoController@index')->name('tecnicos.index');
+
     Route::resource('categorias', 'CategoriaController');
 
     Route::resource('miembros', 'MiembroController');

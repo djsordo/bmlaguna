@@ -24,6 +24,8 @@
                     @contactos(['telefonos' => null, 'emails' => null])
                     @endcontactos
 
+                    @include('miembros.componentes.funcionesClub', ['checksFuncionesClub' => $checksFuncionesClub])
+
                     <div class="col s12">
                         <button class="btn red" type="submit">Guardar</button>
                     </div>

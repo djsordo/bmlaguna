@@ -46,7 +46,49 @@
                 <div class="col s12">
                     <ul class="collapsible">
                         <li class="hoverable">
-                            <div class="collapsible-header"><h5><i class="material-icons">assignment_ind</i>Funciones</h5></div>
+                            <div class="collapsible-header"><h5><i class="material-icons">how_to_reg</i>Funciones en el club</h5></div>
+                            <div class="collapsible-body">
+                                <div class="row">
+                                    <div class="div col s12 m4 l4">
+                                        <label>Familiar</label><br>
+                                        <span class="flow-text black-text">
+                                            @if ($miembro->funcionesClub->contains('descripcion', 'familiar'))
+                                                <i class="material-icons md-18 green-text" style="vertical-align: middle;">check_circle</i> Sí
+                                            @else
+                                                <span class="grey-text">No</span>
+                                            @endif
+                                        </span>
+                                    </div>
+                                    <div class="div col s12 m4 l4">
+                                        <label>Jugador</label><br>
+                                        <span class="flow-text black-text">
+                                            @if ($miembro->funcionesClub->contains('descripcion', 'jugador'))
+                                                <i class="material-icons md-18 green-text" style="vertical-align: middle;">check_circle</i> Sí
+                                            @else
+                                                <span class="grey-text">No</span>
+                                            @endif
+                                        </span>
+                                    </div>
+                                    <div class="div col s12 m4 l4">
+                                        <label>Técnico</label><br>
+                                        <span class="flow-text black-text">
+                                            @if ($miembro->funcionesClub->contains('descripcion', \BMLaguna\Funcione::DESC_TECNICO))
+                                                <i class="material-icons md-18 green-text" style="vertical-align: middle;">check_circle</i> Sí
+                                            @else
+                                                <span class="grey-text">No</span>
+                                            @endif
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col s12">
+                    <ul class="collapsible">
+                        <li class="hoverable">
+                            <div class="collapsible-header"><h5><i class="material-icons">assignment_ind</i>Historial</h5></div>
                             <div class="collapsible-body">
                                 @for ($i=0; $i < count($miembro->funcionesMiembro()); $i++)
                                     <p class="flow-text"> {!! $miembro->funcionesMiembro()[$i] !!} </p>

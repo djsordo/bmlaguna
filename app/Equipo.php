@@ -3,7 +3,6 @@
 namespace BMLaguna;
 
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 use BMLaguna\Categoria;
 use BMLaguna\Genero;
 use BMLaguna\Funcione;
@@ -42,7 +41,7 @@ class Equipo extends Model
     }
 
     public function oficiales(){
-        $oficiales_id = Funcione::whereIn('descripcion', ['entrenador', 'delegado'])->select('id')->get();
+        $oficiales_id = Funcione::whereIn('descripcion', Funcione::rolesOficialEquipo())->pluck('id');
         return $this->belongsToMany('BMLaguna\Miembro', 'equipo_funcione_miembro')
                     ->withPivot('funcione_id')
                     ->wherePivotIn('funcione_id', $oficiales_id);
@@ -79,13 +78,18 @@ class Equipo extends Model
     }
 
     public function oficialesPosibles(){
-        $f_mayoria = Carbon::now()->subYears(16)->format('Y-m-d');
+        $idTecnico = Funcione::where('descripcion', Funcione::DESC_TECNICO)->value('id');
 
-        // Sacamos los oficiales válidos para el equipo (mayores de 16 años), que no esten ya en el equipo de oficiales.
-        return Miembro::where('f_nacimiento', '<', $f_mayoria)
-                        ->whereNull('f_baja')
-                                    ->get()->diff($this->oficiales);
+        if (! $idTecnico) {
+            return collect();
+        }
 
+        return Miembro::whereNull('f_baja')
+            ->whereHas('funcionesClub', function ($q) use ($idTecnico) {
+                $q->where('funcione_id', $idTecnico);
+            })
+            ->get()
+            ->diff($this->oficiales);
     }
 
     public function scopePorTemporada($query, $temporada){

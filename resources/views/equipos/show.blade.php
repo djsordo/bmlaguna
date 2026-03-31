@@ -2,6 +2,8 @@
 
 @section('content')
 
+@include('common.success')
+
     <div class="row">
         <div class="col s12 center">
             <h1>{{ $equipo->nombre }}</h1>
@@ -112,7 +114,7 @@
                         <span class="secondary-content">
                             <a href="/miembros/{{$oficial->id}}/edit" data-tooltip="Editar datos"><i class="material-icons black-text">edit</i></a>
                             <a href="/miembros/{{$oficial->id}}"><i class="material-icons black-text">assignment</i></a>
-                            <a href="/equipos/{{$equipo->id}}/{{$oficial->id}}/{{ $oficial->oficialEquipo($equipo->id)->first()->descripcion }}/deasignar"><i class="material-icons teal-text">clear</i></a>
+                            <a href="/equipos/{{$equipo->id}}/{{$oficial->id}}/{{ \BMLaguna\Funcione::descripcionASlug($oficial->oficialEquipo($equipo->id)->first()->descripcion) }}/deasignar"><i class="material-icons teal-text">clear</i></a>
                         </span>
                     </li>
                 @endforeach
@@ -159,8 +161,9 @@
                             <span class="title"> {{ $oficialPosible->nombre . ' ' . $oficialPosible->apellido1 . ' ' . $oficialPosible->apellido2 }} </span>
                             
                             <div class="secondary-content">
-                                <a href="/equipos/{{$equipo->id}}/{{$oficialPosible->id}}/entrenador/asignar" class="teal-text text-lighten-1"><i class="material-icons">school</i></a><br>
-                                <a href="/equipos/{{$equipo->id}}/{{$oficialPosible->id}}/delegado/asignar" class="teal-text text-lighten-1"><i class="material-icons">person_add</i></a>
+                                <a href="/equipos/{{$equipo->id}}/{{$oficialPosible->id}}/primer-entrenador/asignar" class="teal-text text-lighten-1 tooltipped" data-tooltip="Primer entrenador"><i class="material-icons">looks_one</i></a>
+                                <a href="/equipos/{{$equipo->id}}/{{$oficialPosible->id}}/segundo-entrenador/asignar" class="teal-text text-lighten-1 tooltipped" data-tooltip="Segundo entrenador"><i class="material-icons">looks_two</i></a>
+                                <a href="/equipos/{{$equipo->id}}/{{$oficialPosible->id}}/delegado/asignar" class="teal-text text-lighten-1 tooltipped" data-tooltip="Delegado"><i class="material-icons">person_add</i></a>
                             </div>
                         </li>
                     @endforeach
@@ -172,7 +175,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var elems = document.querySelectorAll('.modal');
-            var instances = M.Modal.init(elems);
+            M.Modal.init(elems);
+            var tips = document.querySelectorAll('.tooltipped');
+            M.Tooltip.init(tips);
         });
     </script>
 @endsection

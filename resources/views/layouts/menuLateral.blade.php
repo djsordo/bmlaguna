@@ -80,6 +80,7 @@
                 <div class="collapsible-body">
                 <ul class="red accent-4">
                     <li><a class="white-text" style="font-size: 16px" href="{{ route('equipaciones') }}">Equipaciones</a></li>
+                    <li><a class="white-text" style="font-size: 16px" href="{{ route('tecnicos.index') }}">Técnicos</a></li>
                     <li><a class="white-text" style="font-size: 16px" href="{{ route('documentos') }}">Documentos</a></li>
                     <li><a class="white-text" style="font-size: 16px" href="{{ route('register') }}">Registro</a></li>
                 </ul>

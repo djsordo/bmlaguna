@@ -41,6 +41,43 @@ class Miembro extends Model
         return $this->belongsToMany('BMLaguna\Funcione', 'equipo_funcione_miembro', 'miembro_id', 'funcione_id')->withPivot('equipo_id')->orderBy('pivot_equipo_id', 'DESC');
     }
 
+    /**
+     * Funciones de club, pivot funcione_miembro.
+     */
+    public function funcionesClub(){
+        return $this->belongsToMany('BMLaguna\Funcione', 'funcione_miembro', 'miembro_id', 'funcione_id');
+    }
+
+    /**
+     * Sincroniza en funcione_miembro solo familiar / jugador / tecnico según checkboxes del formulario.
+     * No modifica delegado ni primer/segundo entrenador.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return void
+     */
+    public function sincronizarFuncionesClubDesdeFormulario(\Illuminate\Http\Request $request)
+    {
+        $map = [
+            'func_club_familiar' => 'familiar',
+            'func_club_jugador' => 'jugador',
+            'func_club_tecnico' => Funcione::DESC_TECNICO,
+        ];
+        foreach ($map as $input => $descripcion) {
+            $fid = Funcione::where('descripcion', $descripcion)->value('id');
+            if (! $fid) {
+                continue;
+            }
+            $marcado = $request->has($input) && $request->input($input);
+            if ($marcado) {
+                if (! $this->funcionesClub()->where('funcione_id', $fid)->exists()) {
+                    $this->funcionesClub()->attach($fid);
+                }
+            } else {
+                $this->funcionesClub()->detach($fid);
+            }
+        }
+    }
+
     public function equipos(){
         return $this->belongsToMany('BMLaguna\Equipo', 'equipo_funcione_miembro', 'miembro_id', 'equipo_id')->withPivot('funcione_id');
     }
@@ -112,7 +149,7 @@ class Miembro extends Model
 
 
     public function OficialEquipo($equipo_id){
-        $funciones_id = Funcione::whereIn('descripcion', ['entrenador', 'delegado'])->select('id')->get();
+        $funciones_id = Funcione::whereIn('descripcion', Funcione::rolesOficialEquipo())->pluck('id');
         return $this->belongsToMany('BMLaguna\Funcione', 'equipo_funcione_miembro', 'miembro_id', 'funcione_id')
                     ->wherePivot('equipo_id', $equipo_id)
                     ->wherePivotIn('funcione_id', $funciones_id);
