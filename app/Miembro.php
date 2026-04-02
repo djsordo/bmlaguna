@@ -49,6 +49,24 @@ class Miembro extends Model
     }
 
     /**
+     * Tiene la función de club "jugador" en funcione_miembro.
+     */
+    public function esJugadorClub()
+    {
+        if ($this->relationLoaded('funcionesClub')) {
+            return $this->funcionesClub->contains(function ($f) {
+                return isset($f->descripcion) && $f->descripcion === 'jugador';
+            });
+        }
+        $fid = Funcione::where('descripcion', 'jugador')->value('id');
+        if (! $fid) {
+            return false;
+        }
+
+        return $this->funcionesClub()->where('funcione_id', $fid)->exists();
+    }
+
+    /**
      * Sincroniza en funcione_miembro solo familiar / jugador / tecnico según checkboxes del formulario.
      * No modifica delegado ni primer/segundo entrenador.
      *
@@ -75,6 +93,77 @@ class Miembro extends Model
             } else {
                 $this->funcionesClub()->detach($fid);
             }
+        }
+    }
+
+    /**
+     * Marca en funcione_miembro la función "jugador" de club si aún no está.
+     * Se usa al asignar un miembro como jugador de un equipo.
+     */
+    public function asegurarFuncionClubJugadorEnFicha()
+    {
+        $idJugador = Funcione::where('descripcion', 'jugador')->value('id');
+        if (! $idJugador) {
+            return;
+        }
+        if (! $this->funcionesClub()->where('funcione_id', $idJugador)->exists()) {
+            $this->funcionesClub()->attach($idJugador);
+        }
+    }
+
+    /**
+     * Quita "jugador" de funcione_miembro si el miembro ya no figura como jugador
+     * en ningún equipo de la temporada actual.
+     */
+    public function quitarFuncionClubJugadorSiSinEquiposEnTemporadaActual()
+    {
+        $tempActual = Temporada::Tactual();
+        if (! $tempActual) {
+            return;
+        }
+        $idJugador = Funcione::where('descripcion', 'jugador')->value('id');
+        if (! $idJugador) {
+            return;
+        }
+
+        $sigueComoJugador = DB::table('equipo_funcione_miembro')
+            ->join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')
+            ->where('equipo_funcione_miembro.miembro_id', $this->id)
+            ->where('equipo_funcione_miembro.funcione_id', $idJugador)
+            ->where('equipos.temporada_id', $tempActual->id)
+            ->exists();
+
+        if (! $sigueComoJugador) {
+            $this->funcionesClub()->detach($idJugador);
+        }
+    }
+
+    /**
+     * Marca en funcione_miembro la función "tecnico" de club si aún no está.
+     */
+    public function asegurarFuncionClubTecnicoEnFicha()
+    {
+        $idTecnico = Funcione::where('descripcion', Funcione::DESC_TECNICO)->value('id');
+        if (! $idTecnico) {
+            return;
+        }
+        if (! $this->funcionesClub()->where('funcione_id', $idTecnico)->exists()) {
+            $this->funcionesClub()->attach($idTecnico);
+        }
+    }
+
+    /**
+     * Marca en funcione_miembro la función "familiar" si aún no está.
+     * Complementa el registro en equipo_funcione_miembro (equipo_id null) usado hasta ahora.
+     */
+    public function asegurarFuncionClubFamiliarEnFicha()
+    {
+        $idFamiliar = Funcione::where('descripcion', 'familiar')->value('id');
+        if (! $idFamiliar) {
+            return;
+        }
+        if (! $this->funcionesClub()->where('funcione_id', $idFamiliar)->exists()) {
+            $this->funcionesClub()->attach($idFamiliar);
         }
     }
 
@@ -485,6 +574,7 @@ class Miembro extends Model
                 if ($responsable1->funciones()->where('descripcion', 'familiar')->count() == 0){
                     $responsable1->funciones()->attach($funcione_id, ['equipo_id' => null]);
                 }
+                $responsable1->asegurarFuncionClubFamiliarEnFicha();
             }
         }
 
@@ -517,6 +607,7 @@ class Miembro extends Model
                 if ($responsable2->funciones()->where('descripcion', 'familiar')->count() == 0){
                     $responsable2->funciones()->attach($funcione_id, ['equipo_id' => null]);
                 }
+                $responsable2->asegurarFuncionClubFamiliarEnFicha();
             }
         }
 
@@ -578,20 +669,85 @@ class Miembro extends Model
             /* Se mira la categoría */
             $totalAPagar = $this->categoria($temporada->temporada)->precio_inscripcion;
         }
-        return [$this->pagos->where('temporada_id', $temporada->id)->sum('importe'), $totalAPagar];
+        $importePagado = $this->pagos
+            ->where('temporada_id', $temporada->id)
+            ->filter(function ($p) {
+                return $p->f_pago !== null && $p->f_pago !== '';
+            })
+            ->sum('importe');
+
+        return [$importePagado, $totalAPagar];
 
     }
 
     /* devuelve el importe de lo pagado en una temporada */
     /* NO ESTÁ PROBADA */
     public function pagado($temporada){
-            return Pago::where('miembro_id', $this->id)->where('temporada_id', $temporada->id)->sum('importe');
+            return Pago::where('miembro_id', $this->id)
+                ->where('temporada_id', $temporada->id)
+                ->realizados()
+                ->sum('importe');
         }
 
     /* devuelve el importe de lo que tiene que pagar en una temporada */
     public function aPagar($temporada){
         //dd($temporada->temporada);
         return $this->categoria($temporada->temporada)->precio_inscripcion;
+    }
+
+    /**
+     * Cuota de inscripción según la categoría del equipo en el que juega en esa temporada
+     * (no por edad). Si no figura como jugador en ningún equipo de la temporada, devuelve null.
+     *
+     * @param  \BMLaguna\Temporada  $temporada
+     * @return float|null
+     */
+    public function totalInscripcionSegunEquipoEnTemporada($temporada)
+    {
+        if (! $temporada) {
+            return null;
+        }
+        $jugadorId = Funcione::where('descripcion', 'jugador')->value('id');
+        if (! $jugadorId) {
+            return null;
+        }
+
+        $equipo = $this->equipos()
+            ->where('equipos.temporada_id', $temporada->id)
+            ->wherePivot('funcione_id', $jugadorId)
+            ->orderBy('equipos.id')
+            ->first();
+
+        if (! $equipo || ! $equipo->categoria) {
+            return null;
+        }
+
+        return (float) $equipo->categoria->precio_inscripcion;
+    }
+
+    /**
+     * Pagado, cuota teórica de inscripción y % cubierto (0–100) para una temporada.
+     * La cuota total es la del equipo (categoría del equipo), no la calculada por edad.
+     * porcentaje es null si no hay cuota de equipo o es 0.
+     *
+     * @param  \BMLaguna\Temporada|null  $temporada
+     * @return array{pagado: float, total: float, porcentaje: int|null}|null
+     */
+    public function datosCuotaInscripcionTemporada($temporada)
+    {
+        if (! $temporada) {
+            return null;
+        }
+        $total = $this->totalInscripcionSegunEquipoEnTemporada($temporada);
+        $pagado = (float) $this->pagado($temporada);
+
+        if ($total === null || $total <= 0) {
+            return ['pagado' => $pagado, 'total' => 0, 'porcentaje' => null];
+        }
+
+        $porcentaje = (int) min(100, round(100 * $pagado / $total, 0));
+
+        return ['pagado' => $pagado, 'total' => $total, 'porcentaje' => $porcentaje];
     }
 
     /* Devuelve la lista de pagos deun mienbro por temporada */

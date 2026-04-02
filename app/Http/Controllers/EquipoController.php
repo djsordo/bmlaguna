@@ -137,13 +137,8 @@ class EquipoController extends Controller
             $equipo = Equipo::findOrFail($equipo_id);
             $miembro = Miembro::findOrFail($miembro_id);
 
-            $idTecnico = Funcione::where('descripcion', Funcione::DESC_TECNICO)->value('id');
-            if (! $idTecnico || ! $miembro->funcionesClub()->where('funcione_id', $idTecnico)->exists()) {
-                return redirect()->route('equipos.show', $equipo_id)
-                    ->with('error', 'El miembro debe tener la función Técnico marcada en su ficha de miembro.');
-            }
-
             $equipo->miembros()->attach($miembro_id, ['funcione_id' => $funcion->id]);
+            $miembro->asegurarFuncionClubTecnicoEnFicha();
 
             return redirect()->route('equipos.show', $equipo_id);
         }
@@ -155,6 +150,13 @@ class EquipoController extends Controller
         }
         $equipo = Equipo::findOrFail($equipo_id);
         $equipo->miembros()->attach($miembro_id, ['funcione_id' => $funcion->id]);
+
+        $m = Miembro::findOrFail($miembro_id);
+        if ($funcion->descripcion === 'jugador') {
+            $m->asegurarFuncionClubJugadorEnFicha();
+        } elseif (in_array($funcion->descripcion, Funcione::rolesOficialEquipo(), true)) {
+            $m->asegurarFuncionClubTecnicoEnFicha();
+        }
 
         return redirect()->route('equipos.show', $equipo_id);
     }
@@ -169,6 +171,11 @@ class EquipoController extends Controller
 
         $equipo->miembros()->wherePivot('miembro_id', $miembro_id)
             ->wherePivot('funcione_id', $funcion->id)->detach();
+
+        $m = Miembro::findOrFail($miembro_id);
+        if ($funcion->descripcion === 'jugador') {
+            $m->quitarFuncionClubJugadorSiSinEquiposEnTemporadaActual();
+        }
 
         return redirect()->route('equipos.show', $equipo_id);
     }

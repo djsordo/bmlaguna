@@ -66,15 +66,21 @@ class Equipo extends Model
             $genero = [$masculino_id, $femenino_id];
         }
 
-        // Sacamos los jugadores válidos para el equipo (Edades en los límites de la categoría, que no tengan otro equipo en la misma temporada)
+        $jugadorId = Funcione::where('descripcion', 'jugador')->value('id');
+        if (! $jugadorId) {
+            return collect();
+        }
+
+        // Misma temporada: solo excluir si ya está como jugador en algún equipo (no por otros roles: técnico, etc.).
         return Miembro::whereYear('f_nacimiento', '>', $fDesde)
-                                    ->whereYear('f_nacimiento', '<=', $fHasta)
-                                    ->whereNull('f_baja')
-                                    ->whereIn('genero_id', $genero)
-                                    ->whereDoesntHave('equipos', function ($query){
-                                        $query->where('temporada_id', $this->temporada_id);
-                                    })
-                                    ->get();
+            ->whereYear('f_nacimiento', '<=', $fHasta)
+            ->whereNull('f_baja')
+            ->whereIn('genero_id', $genero)
+            ->whereDoesntHave('equipos', function ($query) use ($jugadorId) {
+                $query->where('temporada_id', $this->temporada_id)
+                    ->where('equipo_funcione_miembro.funcione_id', $jugadorId);
+            })
+            ->get();
     }
 
     public function oficialesPosibles(){

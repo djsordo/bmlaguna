@@ -73,7 +73,7 @@
                 </td>
                 <td colspan="5">
                     <span class="cabecera">Nº RECIBO:</span> <b>{{$pago->nRecibo}}</b><br>
-                    <span class="cabecera">Fecha:</span> <b>{{date('d-m-Y', strtotime($pago->f_pago))}}</b>
+                    <span class="cabecera">Fecha:</span> <b>{{ $pago->f_pago ? date('d-m-Y', strtotime($pago->f_pago)) : '—' }}</b>
                 </td>
                 
             </tr>

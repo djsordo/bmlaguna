@@ -148,6 +148,9 @@ class MailController extends Controller
     public function reciboPago($pago_id, $cuota, $pagado, $correo){
         //dd($correo);
         $pago = Pago::find($pago_id);
+        if (! $pago || ! $pago->esRealizado()) {
+            return redirect()->back()->with('error', 'No se puede enviar el recibo: falta fecha de pago (pendiente).');
+        }
         $miembro = Miembro::find($pago->miembro_id);
 
         $pdf = PDF::loadview('pdf.reciboPago', compact('pago', 'miembro', 'cuota', 'pagado'))->setPaper('a5', 'landscape');
@@ -173,10 +176,15 @@ class MailController extends Controller
 
         $for = $email->email;
 
-        Mail::send('emails.preinsAntiguos', compact('miembro_id'), function($msj) use ($for){
-            $msj->subject('Preinscripcion Club Balonmano Laguna');
-            $msj->to($for);
-        });
+        try {
+            Mail::send('emails.preinsAntiguos', compact('miembro_id'), function($msj) use ($for){
+                $msj->subject('Preinscripcion Club Balonmano Laguna');
+                $msj->to($for);
+            });
+        } catch (\Exception $e) {
+            report($e);
+            return redirect()->back()->with('error', 'No se ha podido enviar el correo de preinscripción. Revisa la configuración de correo (SMTP).');
+        }
 
         return redirect()->back()->with('status', 'Correo de preinscripción enviado correctamente');
     }
@@ -193,25 +201,30 @@ class MailController extends Controller
 
         $for = $email->email;
 
-        Mail::send('emails.insAntiguos', compact('miembro', 'tActual', 'pendiente'), function($msj) use ($for){
-            $msj->subject('Inscripcion Club Balonmano Laguna');
-            $msj->to($for);
-            $msj->attach(public_path('docsInscripcion/Normas.pdf'),
-                            [
-                                'as' => 'Normas.pdf',
-                                'mime' => 'application/pdf',
-                            ]);
-            $msj->attach(public_path('docsInscripcion/Protocolo.pdf'),
-                            [
-                                'as' => 'Protocolo.pdf',
-                                'mime' => 'application/pdf',
-                            ]);
-            $msj->attach(public_path('docsInscripcion/Autorizacion.pdf'),
-                            [
-                                'as' => 'Autorizacion.pdf',
-                                'mime' => 'application/pdf',
-                            ]);
-        });
+        try {
+            Mail::send('emails.insAntiguos', compact('miembro', 'tActual', 'pendiente'), function($msj) use ($for){
+                $msj->subject('Inscripcion Club Balonmano Laguna');
+                $msj->to($for);
+                $msj->attach(public_path('docsInscripcion/Normas.pdf'),
+                                [
+                                    'as' => 'Normas.pdf',
+                                    'mime' => 'application/pdf',
+                                ]);
+                $msj->attach(public_path('docsInscripcion/Protocolo.pdf'),
+                                [
+                                    'as' => 'Protocolo.pdf',
+                                    'mime' => 'application/pdf',
+                                ]);
+                $msj->attach(public_path('docsInscripcion/Autorizacion.pdf'),
+                                [
+                                    'as' => 'Autorizacion.pdf',
+                                    'mime' => 'application/pdf',
+                                ]);
+            });
+        } catch (\Exception $e) {
+            report($e);
+            return redirect()->back()->with('error', 'No se ha podido enviar el correo de inscripción. Revisa la configuración de correo (SMTP).');
+        }
 
         return redirect()->back()->with('status', 'Correo de inscripción enviado correctamente');
     }
@@ -231,13 +244,18 @@ class MailController extends Controller
                 $miembro_id = $jugador->id;
 
                 if (!is_null($for)){
-                    // Envío del mensaje
-                    Mail::send('emails.preinsAntiguos', compact('miembro_id'), function($msj) use ($for){
-                        $msj->subject('Preinscripcion Club Balonmano Laguna');
-                        $msj->to($for);
-                    });
-                    $cadena = $cadena . '<p>' . $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 . '->' . $for . ' : Enviado Correctamente'; 
-                    sleep(1);
+                    try {
+                        // Envío del mensaje
+                        Mail::send('emails.preinsAntiguos', compact('miembro_id'), function($msj) use ($for){
+                            $msj->subject('Preinscripcion Club Balonmano Laguna');
+                            $msj->to($for);
+                        });
+                        $cadena = $cadena . '<p>' . $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 . '->' . $for . ' : Enviado Correctamente';
+                        sleep(1);
+                    } catch (\Exception $e) {
+                        report($e);
+                        $cadena = $cadena . '<p>' . $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 . '->' . $for . ' : ERROR al enviar'; 
+                    }
                 }
                 else{
                     $cadena = $cadena . '<p>' . $jugador->nombre . ' ' . $jugador->apellido1 . ' ' . $jugador->apellido2 . '->' . 'Sin Correo electrónico' . ' : No se ha podido enviar'; 

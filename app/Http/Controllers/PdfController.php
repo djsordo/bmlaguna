@@ -99,6 +99,9 @@ class PdfController extends Controller
 
     public function reciboPago($pago_id, $cuota, $pagado){
         $pago = Pago::find($pago_id);
+        if (! $pago || ! $pago->esRealizado()) {
+            abort(404);
+        }
         $miembro = Miembro::find($pago->miembro_id);
 
         //$formatterES = new \NumberFormatter("es", \NumberFormatter::SPELLOUT);

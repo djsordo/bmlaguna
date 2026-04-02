@@ -48,11 +48,14 @@
                     <li class="collection-item avatar">
                         <div class="col s2">
                             <div class="col s12">
-                                <div class="col s10">
+                                <div class="col s10 center-align">
                                     @if (is_null($jugador->rutaFoto()))
                                         <img src="/images/sinfoto.jpg" alt="" class="circle">
                                     @else
                                         <img src="{{'/docs/'.$jugador->rutaFoto() }}" alt="" class="circle">
+                                    @endif
+                                    @if (!is_null($jugador->f_baja))
+                                        <span class="new badge red" data-badge-caption="Baja" title="Dado de baja en el club"></span>
                                     @endif
                                 </div>
                                 <div class="col s2">

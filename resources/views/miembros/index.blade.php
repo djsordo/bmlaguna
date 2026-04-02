@@ -11,15 +11,16 @@
                     'temporadas' => $temporadas, 'tempActual_id' => $tempActual_id, 
                     'categorias' => $categorias, 'catActual_id' => $catActual_id, 
                     'generos' => $generos, 'genActual_id' => $genActual_id,
-                    'nombreBusqueda' => $nombreBusqueda])
+                    'nombreBusqueda' => $nombreBusqueda,
+                    'rolClub' => $rolClub])
     @endbarraSuperior
 
     
         @if ($vista == 'on')
-            @lista (['miembros' => $miembros])
+            @lista (['miembros' => $miembros, 'tempElegida' => $tempElegida ?? null])
             @endlista
         @else
-            @listaCompacta (['miembros' => $miembros])
+            @listaCompacta (['miembros' => $miembros, 'tempElegida' => $tempElegida ?? null])
             @endlistaCompacta
         @endif
     

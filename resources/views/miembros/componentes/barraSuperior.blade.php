@@ -28,14 +28,26 @@
                         </div>
                     </div>
                 </span>
+                @if (!empty($rolClub ?? ''))
+                    <input type="hidden" name="temporada_id" value="{{ $tempActual_id }}">
+                @endif
                 <div class="input-field col s2">
-                    <select name="temporada_id" id="tempSelect">
+                    @if (!empty($rolClub ?? ''))
+                        <select id="tempSelect" disabled>
+                    @else
+                        <select id="tempSelect" name="temporada_id">
+                    @endif
                         <option value="" {{ ($tempActual_id == "") ? 'selected' : ''}}>-- Todas --</option>
                         @foreach ($temporadas as $temporada)
                             <option value="{{ $temporada->id }}" {{ ($temporada->id == $tempActual_id) ? 'selected' : ''}}>{{ $temporada->descripcion}}</option>
                         @endforeach
                     </select>
-                    <label for="tempSelect">Temporada</label>
+                    <label for="tempSelect">
+                        Temporada
+                        @if (!empty($rolClub ?? ''))
+                            <span class="grey-text">(actual)</span>
+                        @endif
+                    </label>
                 </div> 
 
                 <div class="input-field col s2">
@@ -60,7 +72,17 @@
                     <label for="genSelect">Género</label>
                 </div>  
 
-                <div class="col s5">
+                <div class="input-field col s2">
+                    <select name="rol_club" id="rolClubSelect">
+                        <option value="" {{ ($rolClub ?? '') == '' ? 'selected' : '' }}>-- Todos --</option>
+                        <option value="jugador" {{ ($rolClub ?? '') == 'jugador' ? 'selected' : '' }}>Jugador</option>
+                        <option value="tecnico" {{ ($rolClub ?? '') == 'tecnico' ? 'selected' : '' }}>Técnico</option>
+                        <option value="familiar" {{ ($rolClub ?? '') == 'familiar' ? 'selected' : '' }}>Familiar</option>
+                    </select>
+                    <label for="rolClubSelect">Rol (club)</label>
+                </div>
+
+                <div class="col s3">
                     <div class="input-field">
                         <i class="material-icons prefix">search</i>
                         <input type="text" id="nombreBusqueda" name="nombreBusqueda" autocomplete="off" value="{{$nombreBusqueda}}">
@@ -314,10 +336,15 @@
             var instances = M.Modal.init(elems, {opacity: 0.5});
     });
 
-    $select = document.getElementById("tempSelect").onchange = function(){
-        document.getElementById("nombreBusqueda").value = null;
-        document.getElementById("criteriosForm").submit();
-    };
+    (function () {
+        var tempSelect = document.getElementById("tempSelect");
+        if (tempSelect && !tempSelect.disabled) {
+            tempSelect.onchange = function () {
+                document.getElementById("nombreBusqueda").value = null;
+                document.getElementById("criteriosForm").submit();
+            };
+        }
+    })();
 
     $select = document.getElementById("catSelect").onchange = function(){
         document.getElementById("nombreBusqueda").value = null;
@@ -329,12 +356,40 @@
         document.getElementById("criteriosForm").submit();
     };
 
-    $select = document.getElementById("nombreBusqueda").onkeyup = function(){
-        var longitud = document.getElementById("nombreBusqueda").value.length;
-        if ((longitud < 1) || (longitud > 2)){
-                document.getElementById("criteriosForm").submit();
-            } 
+    $select = document.getElementById("rolClubSelect").onchange = function(){
+        document.getElementById("nombreBusqueda").value = null;
+        document.getElementById("criteriosForm").submit();
     };
+
+    /* Búsqueda por nombre: debounce para no recargar en cada tecla (la consulta tarda). */
+    document.addEventListener('DOMContentLoaded', function () {
+        var nombreInput = document.getElementById('nombreBusqueda');
+        if (! nombreInput) {
+            return;
+        }
+        var timer = null;
+        var DEBOUNCE_MS = 450;
+
+        nombreInput.addEventListener('input', function () {
+            var longitud = nombreInput.value.length;
+            if (timer) {
+                window.clearTimeout(timer);
+                timer = null;
+            }
+            /* Igual que antes: no lanzar búsqueda con 1–2 caracteres (esperar al tercero o borrar). */
+            if (longitud >= 1 && longitud <= 2) {
+                return;
+            }
+
+            timer = window.setTimeout(function () {
+                timer = null;
+                var form = document.getElementById('criteriosForm');
+                if (form) {
+                    form.submit();
+                }
+            }, DEBOUNCE_MS);
+        });
+    });
 
     /* Árbol de checkboxes */
 
@@ -477,9 +532,6 @@
     /* Fin Equipo */
 
     $(document).ready(function(){
-        
-        document.getElementById("nombreBusqueda").selectionStart=document.getElementById("nombreBusqueda").selectionEnd=document.getElementById("nombreBusqueda").value.length;
-        document.getElementById("nombreBusqueda").focus();
 
         /* Inicialización del Árbol */
         /* Datos Personales */
@@ -537,6 +589,19 @@
         document.getElementById("checkPagado").checked = true;
         document.getElementById("checkTotalPagar").checked = true;
         /* Fin Pagos */
+
+        /* Tras recargar por búsqueda automática: volver a enfocar el nombre (Materialize ya ha terminado). */
+        setTimeout(function () {
+            var nb = document.getElementById('nombreBusqueda');
+            if (! nb) {
+                return;
+            }
+            nb.focus();
+            var len = nb.value.length;
+            if (typeof nb.setSelectionRange === 'function') {
+                nb.setSelectionRange(len, len);
+            }
+        }, 50);
     });
 
 </script>

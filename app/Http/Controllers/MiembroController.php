@@ -29,12 +29,37 @@ class MiembroController extends Controller
     {
         // Lista de temporadas
         $temporadas = Temporada::all()->sortBy('temporada');
-        $tempActual_id = $request->get('temporada_id');
 
-        if (is_null($tempActual_id)){
-            $tempElegida = Temporada::Tactual();
+        // Rol club (funcione_miembro): excluyente (jugador / tecnico / familiar)
+        // Primera entrada al listado (sin parámetros): jugador + temporada actual.
+        if (! $request->exists('rol_club')) {
+            $rolClub = 'jugador';
+        } else {
+            $rolClub = $request->get('rol_club');
         }
-        else{
+
+        if (! $request->exists('temporada_id')) {
+            $tDef = Temporada::Tactual();
+            $tempActual_id = $tDef ? $tDef->id : null;
+        } else {
+            $tempActual_id = $request->get('temporada_id');
+            if ($tempActual_id === '') {
+                $tempActual_id = null;
+            }
+        }
+
+        // Con filtro de rol: temporada fija a la actual (evita inconsistencias con "Todas")
+        if (! is_null($rolClub) && $rolClub !== '') {
+            $tActual = Temporada::Tactual();
+            if ($tActual) {
+                $tempActual_id = $tActual->id;
+                $tempElegida = $tActual;
+            } else {
+                $tempElegida = is_null($tempActual_id) ? null : Temporada::find($tempActual_id);
+            }
+        } elseif (is_null($tempActual_id)) {
+            $tempElegida = Temporada::Tactual();
+        } else {
             $tempElegida = Temporada::find($tempActual_id);
         }
 
@@ -60,12 +85,20 @@ class MiembroController extends Controller
             $miembros = Miembro::whereNull('f_baja');
         }
 
-        //Temporada
-        if (!is_null($tempActual_id)){
-            $miembros = $miembros->join('equipo_funcione_miembro', 'miembros.id', '=', 'equipo_funcione_miembro.miembro_id')->
-                            join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')->
-                            where('equipos.temporada_id', $tempActual_id)->
-                            select('miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.dorsal');
+        // Temporada (más eficiente con WHERE EXISTS que con JOIN+GROUP BY)
+        // Para rol_club=familiar no aplicamos filtro por equipos/temporada, porque la mayoría de familiares
+        // no están vinculados a equipos y se perderían del listado.
+        $aplicarFiltroTemporada = !is_null($tempActual_id)
+            && (is_null($rolClub) || $rolClub === '' || $rolClub === 'jugador' || $rolClub === 'tecnico');
+
+        if ($aplicarFiltroTemporada) {
+            $miembros = $miembros->whereExists(function ($q) use ($tempActual_id) {
+                $q->select(DB::raw(1))
+                    ->from('equipo_funcione_miembro as efm')
+                    ->join('equipos as e', 'e.id', '=', 'efm.equipo_id')
+                    ->whereColumn('efm.miembro_id', 'miembros.id')
+                    ->where('e.temporada_id', $tempActual_id);
+            });
         }
 
         // Categoria
@@ -86,25 +119,39 @@ class MiembroController extends Controller
             $miembros = $miembros->where(DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"), "like",  "%$nombreBusqueda%");
         }
 
-        $miembros = $miembros->
-                    groupBy('miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.dorsal')->
-                    paginate(10);
+        // Rol en el club (funcione_miembro): filtrar por descripción de función
+        if (!is_null($rolClub) && $rolClub !== '') {
+            $rolClubId = Funcione::where('descripcion', $rolClub)->value('id');
+            if (!is_null($rolClubId)) {
+                $miembros = $miembros->whereExists(function ($q) use ($rolClubId) {
+                    $q->select(DB::raw(1))
+                        ->from('funcione_miembro as fmclub')
+                        ->whereColumn('fmclub.miembro_id', 'miembros.id')
+                        ->where('fmclub.funcione_id', $rolClubId);
+                });
+            }
+        }
+
+        $miembros = $miembros
+                    ->select('miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.dorsal', 'miembros.f_baja')
+                    ->with('funcionesClub')
+                    ->paginate(10);
         /* $miembros = $miembros->paginate(10);         */
 
         $vista = $request->get('vista');
 
         $textoBusqueda = $request->get('nombreBusqueda');
-        $path = $request->url().'?temporada_id='.$tempActual_id.'&categoria_id='.$catActual_id.'&genero_id='.$genActual_id.'&nombreBusqueda='.$nombreBusqueda.'&baja='.$baja;
+        $path = $request->url().'?temporada_id='.$tempActual_id.'&categoria_id='.$catActual_id.'&genero_id='.$genActual_id.'&rol_club='.$rolClub.'&nombreBusqueda='.$nombreBusqueda.'&baja='.$baja;
 
         if (!is_null($vista)){
             $path = $path.'&vista='.$vista;
         }
      //dd($miembros);
         return view('miembros.index', compact('miembros', 'path', 'textoBusqueda', 'vista', 'baja',
-                    'temporadas', 'tempActual_id',
+                    'temporadas', 'tempActual_id', 'tempElegida',
                     'categorias', 'catActual_id',
                     'generos', 'genActual_id',
-                    'nombreBusqueda'));
+                    'nombreBusqueda', 'rolClub'));
     }
 
     /**
@@ -198,6 +245,7 @@ class MiembroController extends Controller
             if ($responsable1->funciones()->where('descripcion', 'familiar')->count() == 0){
                 $responsable1->funciones()->attach($funcione_id, ['equipo_id' => null]);
             }
+            $responsable1->asegurarFuncionClubFamiliarEnFicha();
         }
 
         if (!is_null($miembro->responsable2_id)){
@@ -207,6 +255,7 @@ class MiembroController extends Controller
             if ($responsable2->funciones()->where('descripcion', 'familiar')->count() == 0){
                 $responsable2->funciones()->attach($funcione_id, ['equipo_id' => null]);
             }
+            $responsable2->asegurarFuncionClubFamiliarEnFicha();
         }
 
         // Guardar los datos de los teléfonos
@@ -396,6 +445,7 @@ class MiembroController extends Controller
             if ($responsable1->funciones()->where('descripcion', 'familiar')->count() == 0){
                 $responsable1->funciones()->attach($funcione_id, ['equipo_id' => null]);
             }
+            $responsable1->asegurarFuncionClubFamiliarEnFicha();
         }
 
         if (!is_null($miembro->responsable2_id)){
@@ -406,6 +456,7 @@ class MiembroController extends Controller
             if ($responsable2->funciones()->where('descripcion', 'familiar')->count() == 0){
                 $responsable2->funciones()->attach($funcione_id, ['equipo_id' => null]);
             }
+            $responsable2->asegurarFuncionClubFamiliarEnFicha();
         }
 
         // Foto

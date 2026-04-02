@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+@include('common.success')
 @include('common.errors')
 
 
@@ -109,16 +110,36 @@
             @foreach($pagos as $pago)
                 <li>
                     <div class="collapsible-header">
-                        <i class="material-icons tooltipped" data-tooltip="Enviar correo electrónico con el recibo">email</i>
-                        <span class="col s3">{{date('d-m-Y', strtotime($pago->f_pago))}}</span>
+                        @if($pago->esRealizado())
+                            <i class="material-icons tooltipped" data-tooltip="Enviar correo electrónico con el recibo">email</i>
+                        @else
+                            <i class="material-icons grey-text text-lighten-1 tooltipped" data-tooltip="Sin fecha de pago (pendiente)">email</i>
+                        @endif
+                        <span class="col s3">
+                            @if($pago->esRealizado())
+                                {{ date('d-m-Y', strtotime($pago->f_pago)) }}
+                            @else
+                                <span class="grey-text">Pendiente</span>
+                            @endif
+                        </span>
                         <span class="col s4">{{$pago->tipospago->descripcion}}</span>
                         <span class="col s3  right-align">{{$pago->importe}}</span>
-                        <span class="col s2 center"><a href="/pdf-reciboPago/{{$pago->id}}/{{$cuota}}/{{$pago->sumPagadoParcial()}}"><i class="material-icons tooltipped" data-tooltip="Imprimir recibo {{$pago->nRecibo}}">print</i></a></span>
+                        <span class="col s2 center">
+                            @if($pago->esRealizado())
+                                <a href="/pdf-reciboPago/{{$pago->id}}/{{$cuota}}/{{$pago->sumPagadoParcial()}}"><i class="material-icons tooltipped" data-tooltip="Imprimir recibo {{$pago->nRecibo}}">print</i></a>
+                            @else
+                                <i class="material-icons grey-text text-lighten-1 tooltipped" data-tooltip="Recibo disponible cuando exista fecha de pago">print</i>
+                            @endif
+                        </span>
                     </div>
                     <div class="collapsible-body">
-                        @foreach ($miembro->emails as $correo)
-                            <span class="flow-text"><a href="/reciboPago/{{$pago->id}}/{{$cuota}}/{{$pago->sumPagadoParcial()}}/{{$correo->email}}">Enviar recibo a {{$correo->email}}</a></br><span>
-                        @endforeach
+                        @if($pago->esRealizado())
+                            @foreach ($miembro->emails as $correo)
+                                <span class="flow-text"><a href="/reciboPago/{{$pago->id}}/{{$cuota}}/{{$pago->sumPagadoParcial()}}/{{$correo->email}}">Enviar recibo a {{$correo->email}}</a></br><span>
+                            @endforeach
+                        @else
+                            <span class="flow-text grey-text">El recibo por correo estará disponible cuando se registre la fecha de pago.</span>
+                        @endif
                     </div>
                 </li>
             @endforeach

@@ -1,3 +1,9 @@
+<style>
+    .miembro-cuota-indicador { min-width: 76px; max-width: 104px; margin-left: auto; }
+    .miembro-cuota-bar { height: 6px; border-radius: 3px; margin: 0 0 3px 0; }
+    .miembro-cuota-bar .determinate { transition: width 0.35s ease; }
+    .miembro-cuota-txt { font-size: 11px; font-weight: 600; color: #424242; display: block; line-height: 1.1; text-align: center; }
+</style>
 <ul class="collapsible popout">
     @foreach ($miembros as $miembro)
         <li>
@@ -12,18 +18,38 @@
 
                 {{-- <span class="col s1 flow-text red-text center">{{$miembro->dorsal}}</span> --}}
 
-                <div class="col s10 flow-text"><strong>{{ $miembro->nombre . ' ' . $miembro->apellido1 . ' ' . $miembro->apellido2 }}</strong></div>
+                <div class="col s9 m10 flow-text"><strong>{{ $miembro->nombre . ' ' . $miembro->apellido1 . ' ' . $miembro->apellido2 }}</strong></div>
                 
-                <div class="col s1">
-                    <div class="col s1">
-                        @if ($miembro->preinscrito())
-                            <i class="material-icons tooltipped md-18" data-tooltip="Preinscrito">euro</i>
+                <div class="col s2 m1">
+                    @if ($miembro->esJugadorClub())
+                    <div class="col s12 miembro-cuota-indicador">
+                        @if (!empty($tempElegida))
+                            @php $d = $miembro->datosCuotaInscripcionTemporada($tempElegida); @endphp
+                            @if ($d && $d['porcentaje'] !== null)
+                                @php
+                                    $p = $d['porcentaje'];
+                                    if ($p >= 100) { $colBar = '#1b5e20'; }
+                                    elseif ($p >= 70) { $colBar = '#388e3c'; }
+                                    elseif ($p >= 40) { $colBar = '#fb8c00'; }
+                                    elseif ($p >= 1) { $colBar = '#e65100'; }
+                                    else { $colBar = '#9e9e9e'; }
+                                @endphp
+                                <div class="tooltipped" data-tooltip="{{ number_format($d['pagado'], 2, ',', '.') }} € de {{ number_format($d['total'], 2, ',', '.') }} € ({{ $d['porcentaje'] }}%)">
+                                    <div class="progress miembro-cuota-bar grey lighten-3">
+                                        <div class="determinate" style="width: {{ $d['porcentaje'] }}%; background-color: {{ $colBar }};"></div>
+                                    </div>
+                                    <span class="miembro-cuota-txt">{{ $d['porcentaje'] }}%</span>
+                                </div>
+                            @else
+                                <span class="grey-text text-lighten-1 tooltipped" data-tooltip="Sin cuota de inscripción calculable para esta temporada">—</span>
+                            @endif
                         @else
-                            <i class="material-icons tooltipped md-18 md-dark md-inactive" data-tooltip="No Preinscrito">euro</i>
+                            <span class="grey-text text-lighten-1 tooltipped" data-tooltip="Elige una temporada en los criterios de búsqueda">—</span>
                         @endif
                     </div>
+                    @endif
 
-                    <div class="col s1">
+                    <div class="col s12 center-align" style="margin-top:4px;">
                         @if ($miembro->probado())
                             <i class="material-icons tooltipped md-18 " data-tooltip="Equipación Probada">local_grocery_store</i>
                         @else
@@ -48,10 +74,12 @@
                     <div class="col s1">
                         <a href="/documentosMiembros/{{$miembro->id}}/docsMiembro" class="btn-floating indigo tooltipped" data-tooltip="Documentación"><i class="material-icons">photo_library</i></a>
                     </div>
+                    @if ($miembro->esJugadorClub())
                     <div class="col s1">
                         {{-- <a href="{{route ('crear-pago', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a> --}}
                         <a href="{{route ('pagosMiembro', [$miembro->id])}}" class="btn-floating black tooltipped" data-tooltip="Pagos"><i class="material-icons">euro_symbol</i></a>
                     </div>
+                    @endif
 
                     <div class="col s1">
                         <a href="/equipacioneMiembroTalla/{{$miembro->id}}/edit" class="btn-floating lime tooltipped" data-tooltip="Equipación"><i class="material-icons">local_grocery_store</i></a>

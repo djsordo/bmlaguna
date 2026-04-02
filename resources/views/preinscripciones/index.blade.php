@@ -309,12 +309,34 @@
         document.getElementById("tempForm").submit();
     };
 
-    $select = document.getElementById("nombre").onkeyup = function(){
-        var longitud = document.getElementById("nombre").value.length;
-        if ((longitud < 1) || (longitud > 2)){
-                document.getElementById("tempForm").submit();
+    /* Búsqueda por nombre: debounce (misma lógica que en miembros). */
+    document.addEventListener('DOMContentLoaded', function () {
+        var nombreInput = document.getElementById('nombre');
+        if (! nombreInput) {
+            return;
+        }
+        var timer = null;
+        var DEBOUNCE_MS = 450;
+
+        nombreInput.addEventListener('input', function () {
+            var longitud = nombreInput.value.length;
+            if (timer) {
+                window.clearTimeout(timer);
+                timer = null;
             }
-    };
+            if (longitud >= 1 && longitud <= 2) {
+                return;
+            }
+
+            timer = window.setTimeout(function () {
+                timer = null;
+                var form = document.getElementById('tempForm');
+                if (form) {
+                    form.submit();
+                }
+            }, DEBOUNCE_MS);
+        });
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         var elems = document.querySelectorAll('.tooltipped');
@@ -347,10 +369,19 @@
             minLength: 3,
         }); */
 
-        document.getElementById("nombre").selectionStart=document.getElementById("nombre").selectionEnd=document.getElementById("nombre").value.length;
-        document.getElementById("nombre").focus();
-
         $('.collapsible').collapsible();
+
+        setTimeout(function () {
+            var el = document.getElementById('nombre');
+            if (! el) {
+                return;
+            }
+            el.focus();
+            var len = el.value.length;
+            if (typeof el.setSelectionRange === 'function') {
+                el.setSelectionRange(len, len);
+            }
+        }, 50);
     });
 </script>
 

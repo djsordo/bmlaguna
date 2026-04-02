@@ -3,6 +3,7 @@
 namespace BMLaguna\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\DB;
 
@@ -63,52 +64,93 @@ class PagoController extends Controller
         // Búsqueda por nombre
         $textoBusqueda = $request->input('nombre');
 
-        // Query de la búsqueda
-
-        // Temporada
-        $pagos = Pago::where('pagos.temporada_id', $tempActual_id)/* ->orderBy('f_pago') */;
-
-        // Equipo
         $nJugadores = null;
         $totalAPagar = null;
         $nombreEquipo = null;
-        if (!is_null($equipoActual_id)){
-            if ($equipoActual_id != '0'){
-                $pagos = $pagos->join('equipo_funcione_miembro', 'pagos.miembro_id', '=', 'equipo_funcione_miembro.miembro_id')->
-                                join('funciones', 'funciones.id', '=', 'equipo_funcione_miembro.funcione_id')-> 
-                                join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')->
-                                where('equipos.temporada_id', $tempActual_id)->
-                                where('equipo_funcione_miembro.equipo_id', $equipoActual_id)->
-                                where('funciones.descripcion', 'jugador');
 
-                $equipo = Equipo::find($equipoActual_id);
-                $nombreEquipo = $equipo->categoria->descripcion.'-'.$equipo->genero->descripcion.'-'.$equipo->nombre;
-                $nJugadores = $equipo->jugadores->count();
-                $totalAPagar = ($equipo->categoria->precio_inscripcion)*$nJugadores;
+        // Equipo concreto: listar todos los jugadores del equipo (aunque no tengan filas en pagos).
+        if (! is_null($equipoActual_id) && $equipoActual_id != '0') {
+            $equipo = Equipo::find($equipoActual_id);
+            if (! $equipo) {
+                abort(404);
             }
-            else{
-                $pagos = $pagos->whereNotExists(function ($query) use ($tempActual_id) {
-                    $query->select(DB::raw(1))
-                            ->from ('equipo_funcione_miembro')
-                            ->join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')
-                            ->whereRaw('pagos.miembro_id = equipo_funcione_miembro.miembro_id and equipos.temporada_id = ' . $tempActual_id);
+
+            $nombreEquipo = $equipo->categoria->descripcion.'-'.$equipo->genero->descripcion.'-'.$equipo->nombre;
+            $jugadores = $equipo->jugadores;
+            $nJugadores = $jugadores->count();
+            $totalAPagar = ($equipo->categoria->precio_inscripcion) * $nJugadores;
+
+            if (! is_null($textoBusqueda) && trim((string) $textoBusqueda) !== '') {
+                $t = mb_strtolower(trim($textoBusqueda));
+                $jugadores = $jugadores->filter(function ($m) use ($t) {
+                    $full = mb_strtolower(trim($m->nombre.' '.$m->apellido1.' '.($m->apellido2 ?? '')));
+
+                    return mb_strpos($full, $t) !== false;
                 });
-
             }
-        }
-        
-        if (!is_null($textoBusqueda)){
-            $pagos = $pagos->join('miembros', 'miembros.id', '=', 'pagos.miembro_id')
-                           ->where(DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"), "like",  "%$textoBusqueda%");
+
+            $jugadores = $jugadores->sortBy(function ($m) {
+                return $m->apellido1.$m->apellido2.$m->nombre;
+            })->values();
+
+            $idsEquipo = $equipo->jugadores->pluck('id')->all();
+            $totalPagos = Pago::where('temporada_id', $tempActual_id)
+                ->whereIn('miembro_id', $idsEquipo)
+                ->realizados()
+                ->sum('importe');
+
+            $items = $jugadores->map(function ($miembro) use ($tempActual_id) {
+                $p = new Pago();
+                $p->exists = false;
+                $p->miembro_id = $miembro->id;
+                $p->temporada_id = $tempActual_id;
+                $p->setRelation('miembro', $miembro);
+
+                return $p;
+            });
+
+            $perPage = 10;
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $pagos = new LengthAwarePaginator(
+                $items->forPage($currentPage, $perPage)->values(),
+                $items->count(),
+                $perPage,
+                $currentPage,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
+            $path = $request->url().'?temporada_id='.$tempActual_id.'&nombre='.$textoBusqueda.'&equipo_id='.$equipoActual_id.'&genero_id='.$genActual_id;
+
+            return view('pagos.index', compact('pagos', 'totalPagos', 'nJugadores', 'totalAPagar', 'nombreEquipo', 'equipos', 'equipoActual_id', 'generos', 'genActual_id', 'temporadas', 'tempElegida', 'tempActual_id', 'textoBusqueda', 'path'));
         }
 
-        $totalPagos = $pagos->sum('pagos.importe');
+        // Resto de criterios: agrupación por miembros que sí tienen registros en pagos (temporada / sin equipo / nombre).
+        $pagos = Pago::where('pagos.temporada_id', $tempActual_id)/* ->orderBy('f_pago') */;
+
+        if (! is_null($equipoActual_id) && $equipoActual_id == '0') {
+            $pagos = $pagos->whereNotExists(function ($query) use ($tempActual_id) {
+                $query->select(DB::raw(1))
+                        ->from('equipo_funcione_miembro')
+                        ->join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')
+                        ->whereRaw('pagos.miembro_id = equipo_funcione_miembro.miembro_id and equipos.temporada_id = '.$tempActual_id);
+            });
+        }
+
+        if (! is_null($textoBusqueda)) {
+            $pagos = $pagos->join('miembros', 'miembros.id', '=', 'pagos.miembro_id')
+                           ->where(DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"), 'like', '%'.$textoBusqueda.'%');
+        }
+
+        $totalPagos = (clone $pagos)
+            ->whereNotNull('pagos.f_pago')
+            ->where('pagos.f_pago', '!=', '')
+            ->sum('pagos.importe');
 
         $pagos = $pagos->select('pagos.miembro_id', 'pagos.temporada_id')->groupBy('pagos.miembro_id', 'pagos.temporada_id');
 
         $pagos = $pagos->paginate(10);
 
-        $path = $request->url().'?temporada_id='.$tempActual_id.'&nombre='.$textoBusqueda. '&equipo_id='.$equipoActual_id. '&genero_id='.$genActual_id;
+        $path = $request->url().'?temporada_id='.$tempActual_id.'&nombre='.$textoBusqueda.'&equipo_id='.$equipoActual_id.'&genero_id='.$genActual_id;
 
         return view('pagos.index', compact('pagos', 'totalPagos', 'nJugadores', 'totalAPagar', 'nombreEquipo', 'equipos', 'equipoActual_id', 'generos', 'genActual_id', 'temporadas', 'tempElegida', 'tempActual_id', 'textoBusqueda', 'path'));
     }

@@ -280,11 +280,54 @@
         M.Collapsible.init(coll);
         var tips = document.querySelectorAll('.tooltipped');
         M.Tooltip.init(tips);
+
+        /* Búsqueda por nombre: debounce (misma lógica que miembros / preinscripciones). */
+        var nombreInput = document.getElementById('nombreBusqueda');
+        if (nombreInput) {
+            var timerNombre = null;
+            var DEBOUNCE_NOMBRE_MS = 450;
+            nombreInput.addEventListener('input', function () {
+                var longitud = nombreInput.value.length;
+                if (timerNombre) {
+                    window.clearTimeout(timerNombre);
+                    timerNombre = null;
+                }
+                if (longitud >= 1 && longitud <= 2) {
+                    return;
+                }
+                timerNombre = window.setTimeout(function () {
+                    timerNombre = null;
+                    var form = document.getElementById('criteriosTecnicosForm');
+                    if (form) {
+                        form.submit();
+                    }
+                }, DEBOUNCE_NOMBRE_MS);
+            });
+        }
+
+        setTimeout(function () {
+            var nb = document.getElementById('nombreBusqueda');
+            if (! nb) {
+                return;
+            }
+            nb.focus();
+            var len = nb.value.length;
+            if (typeof nb.setSelectionRange === 'function') {
+                nb.setSelectionRange(len, len);
+            }
+        }, 50);
     });
 
     document.getElementById('tempSelectTecnicos').onchange = function() {
         document.getElementById('criteriosTecnicosForm').submit();
     };
+
+    var equipoSelect = document.getElementById('equipoSelectTecnicos');
+    if (equipoSelect) {
+        equipoSelect.onchange = function() {
+            document.getElementById('criteriosTecnicosForm').submit();
+        };
+    }
 </script>
 
 @endsection

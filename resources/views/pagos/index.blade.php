@@ -107,7 +107,12 @@
                         @endif
     --}}
                         {{-- <span class="col s2">{{date('d-m-Y', strtotime($pago->f_pago))}}</span> --}}
-                        <span class="col s8">{{$pago->miembro->nombre. ' ' . $pago->miembro->apellido1 . ' ' . $pago->miembro->apellido2}}</span>
+                        <span class="col s8" style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+                            <span>{{ $pago->miembro->nombre.' '.$pago->miembro->apellido1.' '.$pago->miembro->apellido2 }}</span>
+                            @if (!is_null($pago->miembro->f_baja))
+                                <span class="new badge red" data-badge-caption="Baja" title="Dado de baja en el club"></span>
+                            @endif
+                        </span>
                         {{-- <span class="col s2">{{$pago->tiposPago->descripcion}}</span> --}}
                         <span class="col s2 right-align">{{$pago->sumPagado()}}</span>
                         <span class="col s2 right-align">{{$pago->miembro->aPagar($tempElegida)}}</span>
@@ -142,7 +147,13 @@
 
                         <div class="col s12 card">
                         @foreach ($pago->miembro->listaPagos($tempElegida) as $detallePago)
-                            <div class="col s4">{{date('d-m-Y', strtotime($detallePago->f_pago) )}}</div>
+                            <div class="col s4">
+                                @if($detallePago->f_pago)
+                                    {{ date('d-m-Y', strtotime($detallePago->f_pago)) }}
+                                @else
+                                    <span class="grey-text">Pendiente</span>
+                                @endif
+                            </div>
                             <div class="col s4">{{$detallePago->TiposPago->descripcion}}</div>
                             <div class="col s4 right-align">{{$detallePago->importe}}</div>
                         @endforeach
