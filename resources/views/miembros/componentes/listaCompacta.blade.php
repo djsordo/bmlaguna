@@ -89,6 +89,23 @@
                         <a href="/reconocimientos/{{$miembro->id}}" class="btn-floating yellow tooltipped" data-tooltip="Reconocimientos"><i class="material-icons">local_hospital</i></a>
                     </div>
 
+                    @if ($miembro->esJugadorClub())
+                    <div class="col s1">
+                        <a href="{{ route('informesFtt', $miembro->id) }}" class="btn-floating deep-purple lighten-1 tooltipped" data-tooltip="Informe físico-técnico-táctico"><i class="material-icons">assessment</i></a>
+                    </div>
+                    @endif
+
+                    @php
+                        $waUrl = whatsapp_wa_me_url(optional($miembro->telefonos->first())->telefono, 'Estoy probando una pequeña automatización de Whatsapp');
+                    @endphp
+                    <div class="col s1">
+                        @if ($waUrl)
+                            <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" class="btn-floating teal tooltipped" data-tooltip="WhatsApp (demo)"><i class="material-icons">chat</i></a>
+                        @else
+                            <span class="btn-floating grey lighten-2 tooltipped" style="cursor:default; pointer-events:auto;" data-tooltip="Sin teléfono válido para WhatsApp"><i class="material-icons grey-text text-lighten-1">chat</i></span>
+                        @endif
+                    </div>
+
                     @if (!$miembro->preinscrito())
                         <div class="col s1 right">
                             <a href="{{route ('preins-oficina', [$miembro->id])}}" class="btn-floating orange lighten-2 tooltipped" data-tooltip="Preinscripcion en la oficina"><i class="material-icons">business</i></a>

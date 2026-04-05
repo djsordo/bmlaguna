@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('categorias', 'CategoriaController');
 
+    Route::get('miembros/{miembro}/informes-ftt', 'InformeFttController@index')->name('informesFtt');
+    Route::put('miembros/{miembro}/informes-ftt', 'InformeFttController@update')->name('informesFtt.update');
+
     Route::resource('miembros', 'MiembroController');
 
     Route::resource('documentos', 'DocumentoController');

@@ -19,6 +19,7 @@ use BMLaguna\Temporada;
 use BMLaguna\Equipacione;
 use BMLaguna\Talla;
 use BMLaguna\Preinscripcion;
+use BMLaguna\InformeFisicoTecnicoTactico;
 
 
 class Miembro extends Model
@@ -196,6 +197,11 @@ class Miembro extends Model
 
     public function pagos(){
         return $this->hasMany('BMLaguna\Pago');
+    }
+
+    public function informesFisicoTecnicoTacticos()
+    {
+        return $this->hasMany(InformeFisicoTecnicoTactico::class);
     }
 
     // Calcula la edad del miembro en la temporada $temporada
@@ -748,6 +754,100 @@ class Miembro extends Model
         $porcentaje = (int) min(100, round(100 * $pagado / $total, 0));
 
         return ['pagado' => $pagado, 'total' => $total, 'porcentaje' => $porcentaje];
+    }
+
+    /**
+     * Equipos en los que figura como jugador en la temporada.
+     *
+     * @return \Illuminate\Support\Collection|\BMLaguna\Equipo[]
+     */
+    public function equiposComoJugadorEnTemporada($temporada)
+    {
+        if (! $temporada) {
+            return collect();
+        }
+        $jugadorId = Funcione::where('descripcion', 'jugador')->value('id');
+        if (! $jugadorId) {
+            return collect();
+        }
+
+        return $this->equipos()
+            ->where('equipos.temporada_id', $temporada->id)
+            ->wherePivot('funcione_id', $jugadorId)
+            ->with('oficiales')
+            ->orderBy('equipos.id')
+            ->get();
+    }
+
+    /**
+     * Categoría del equipo en el que juega como jugador en la temporada (primer equipo si hubiera varios).
+     */
+    public function categoriaComoJugadorEnTemporada($temporada)
+    {
+        $equipo = $this->equiposComoJugadorEnTemporada($temporada)->first();
+
+        if (! $equipo || ! $equipo->categoria) {
+            return null;
+        }
+
+        return $equipo->categoria;
+    }
+
+    /**
+     * Técnicos candidatos para el informe FTT: oficiales de los equipos en los que juega en la temporada;
+     * si no hay ninguno, miembros con función de club "técnico".
+     * Si se pasa un informe ya guardado y su técnico no está en la lista, se incluye para no perder la referencia.
+     *
+     * @param  \BMLaguna\InformeFisicoTecnicoTactico|null  $informeExistente
+     * @return array{origen: string, tecnicos: \Illuminate\Support\Collection}
+     */
+    public function tecnicosDisponiblesParaInformeFtt($temporada, $informeExistente = null)
+    {
+        if (! $temporada) {
+            return ['origen' => 'club', 'tecnicos' => collect()];
+        }
+
+        $equipos = $this->equiposComoJugadorEnTemporada($temporada);
+        $oficiales = collect();
+        foreach ($equipos as $equipo) {
+            foreach ($equipo->oficiales as $m) {
+                $oficiales->push($m);
+            }
+        }
+        $oficiales = $oficiales->unique('id')->sortBy(function ($m) {
+            return ($m->apellido1 ?? '').' '.($m->nombre ?? '');
+        })->values();
+
+        $origen = 'club';
+        $lista = $oficiales;
+        if ($oficiales->isNotEmpty()) {
+            $origen = 'equipo';
+        } else {
+            $idTecnico = Funcione::where('descripcion', Funcione::DESC_TECNICO)->value('id');
+            if (! $idTecnico) {
+                $lista = collect();
+            } else {
+                $lista = self::whereNull('f_baja')
+                    ->whereHas('funcionesClub', function ($q) use ($idTecnico) {
+                        $q->where('funcione_id', $idTecnico);
+                    })
+                    ->orderBy('apellido1')
+                    ->orderBy('nombre')
+                    ->get();
+            }
+        }
+
+        if ($informeExistente && $informeExistente->tecnico_id
+            && ! $lista->pluck('id')->contains($informeExistente->tecnico_id)) {
+            $t = self::find($informeExistente->tecnico_id);
+            if ($t) {
+                $lista = $lista->push($t)->unique('id')->sortBy(function ($m) {
+                    return ($m->apellido1 ?? '').' '.($m->nombre ?? '');
+                })->values();
+            }
+        }
+
+        return ['origen' => $origen, 'tecnicos' => $lista];
     }
 
     /* Devuelve la lista de pagos deun mienbro por temporada */

@@ -134,7 +134,9 @@ class MiembroController extends Controller
 
         $miembros = $miembros
                     ->select('miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.dorsal', 'miembros.f_baja')
-                    ->with('funcionesClub')
+                    ->with(['funcionesClub', 'telefonos' => function ($q) {
+                        $q->orderBy('id');
+                    }])
                     ->paginate(10);
         /* $miembros = $miembros->paginate(10);         */
 
@@ -347,7 +349,15 @@ class MiembroController extends Controller
 
         $miembro->load('funcionesClub');
 
-        return view('miembros.show', compact('miembro', 'resp1', 'resp2', 'equipaciones', 'equipacionesMiembro'));
+        $informesFtt = $miembro->informesFisicoTecnicoTacticos()
+            ->with(['temporada', 'tecnico'])
+            ->get()
+            ->sortByDesc(function ($row) {
+                return optional($row->temporada)->temporada ?? 0;
+            })
+            ->values();
+
+        return view('miembros.show', compact('miembro', 'resp1', 'resp2', 'equipaciones', 'equipacionesMiembro', 'informesFtt'));
     }
 
     /**

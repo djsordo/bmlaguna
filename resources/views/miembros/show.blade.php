@@ -98,6 +98,68 @@
                     </ul>
                 </div>
 
+                @if ($miembro->esJugadorClub() || $informesFtt->isNotEmpty())
+                <div class="col s12">
+                    <ul class="collapsible">
+                        <li class="hoverable">
+                            <div class="collapsible-header"><h5><i class="material-icons">assessment</i>Informes físico-técnico-tácticos</h5></div>
+                            <div class="collapsible-body">
+                                @if ($informesFtt->isEmpty())
+                                    <p class="flow-text grey-text">No hay informes registrados.</p>
+                                    @if ($miembro->esJugadorClub())
+                                        <p><a href="{{ route('informesFtt', $miembro->id) }}" class="waves-effect waves-light btn-small deep-purple lighten-1"><i class="material-icons left">edit</i>Añadir o editar informes</a></p>
+                                    @endif
+                                @else
+                                    <div class="row" style="margin-bottom: 12px;">
+                                        <div class="col s12">
+                                            @if ($miembro->esJugadorClub())
+                                                <a href="{{ route('informesFtt', $miembro->id) }}" class="waves-effect waves-light btn-small deep-purple lighten-1"><i class="material-icons left">edit</i>Mantenimiento de informes</a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col s12" style="overflow-x: auto;">
+                                            <table class="striped responsive-table centered">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 18%;">Temporada</th>
+                                                        <th style="width: 52%;">Informe</th>
+                                                        <th style="width: 30%;">Técnico</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($informesFtt as $inf)
+                                                    <tr>
+                                                        <td class="flow-text">
+                                                            {{ optional($inf->temporada)->descripcion ?? '—' }}
+                                                        </td>
+                                                        <td class="left-align flow-text informe-ftt-celda-texto">
+                                                            @if (!is_null($inf->texto) && trim((string) $inf->texto) !== '')
+                                                                {{ $inf->texto }}
+                                                            @else
+                                                                <span class="grey-text">—</span>
+                                                            @endif
+                                                        </td>
+                                                        <td class="flow-text">
+                                                            @if ($inf->tecnico)
+                                                                {{ trim($inf->tecnico->nombre.' '.$inf->tecnico->apellido1.' '.$inf->tecnico->apellido2) }}
+                                                            @else
+                                                                <span class="grey-text">—</span>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                @endif
+
                 <div class="col s12">
                     <ul class="collapsible">
                         <li class="hoverable">
@@ -370,6 +432,15 @@
         </div>
     </div>
 </div>
+
+<style>
+    .informe-ftt-celda-texto {
+        white-space: pre-wrap;
+        word-break: break-word;
+        text-align: left !important;
+        vertical-align: top;
+    }
+</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -13,7 +13,7 @@ yarn-error.log
 .env
 .phpunit.result.cache
 /.env
-docs
+/public/docs
 .cursor
 .cursor/rules
 database/dumps/*.sql
