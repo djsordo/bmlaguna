@@ -31,4 +31,28 @@
   .card-action {
     white-space: nowrap;
   }
+
+  /* Modal «Registrar fecha de pago»: footer como hijo directo de .modal (Materialize); datepicker en body. */
+  .modal.modal-marcar-pago {
+    width: 92%;
+    max-width: 26rem;
+    max-height: none;
+    overflow: auto;
+  }
+  .modal.modal-marcar-pago .modal-content {
+    overflow: visible;
+    padding-bottom: 0.5rem;
+  }
+  /* Materialize fija height:56px al footer; con padding propio el botón .btn se desborda. */
+  .modal.modal-marcar-pago .modal-footer {
+    height: auto;
+    min-height: 56px;
+    padding: 10px 24px 14px;
+    box-sizing: border-box;
+  }
+  /* Modal del calendario (Materialize 1.x) por encima del modal de «Registrar fecha». */
+  .modal.datepicker-modal {
+    z-index: 10050 !important;
+  }
+
   

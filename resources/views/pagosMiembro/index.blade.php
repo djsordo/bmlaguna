@@ -63,7 +63,7 @@
                         </div>
 
                         <div class="input-field col s3">
-                            <input type="text" class="datepicker validate" id="f_pago" name="f_pago" value="{{ date('d-m-Y') }}">
+                            <input type="text" class="datepicker datepicker-en-modal validate" id="f_pago" name="f_pago" value="{{ date('d-m-Y') }}">
                             <label for="f_pago">Fecha de pago:</label>
                         </div>
 
@@ -95,15 +95,38 @@
         </div>
         <!-- FIN Modal de nuevo pago -->
 
+        <!-- Modal: registrar fecha de pago (pago pendiente) -->
+        <div id="marcarPagoModal" class="modal modal-marcar-pago">
+            <div class="modal-content">
+                <h4>Registrar fecha de pago</h4>
+                <div class="row">
+                    <form id="marcarPagoForm" method="POST" action="#">
+                        @csrf
+                        @method('PUT')
+                        <div class="input-field col s12">
+                            <input type="text" class="datepicker datepicker-en-modal validate" id="marcarPagoFecha" name="f_pago" value="{{ date('d-m-Y') }}">
+                            <label for="marcarPagoFecha">Fecha de pago</label>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn red waves-effect waves-light" type="submit" form="marcarPagoForm">Guardar</button>
+                <a href="#!" class="btn-flat modal-close waves-effect">Cancelar</a>
+            </div>
+        </div>
+        <!-- FIN modal marcar pago -->
+
         <div class="col s12">
             <ul class="collapsible popout">
                 <li>
                     <div class="collapsible-header">
                         <i class="material-icons">euro_symbol</i>
                         <span class="col s3"><b>Fecha de pago</b></span>
-                        <span class="col s4"><b>Concepto</b></span>
-                        <span class="col s3 right-align"><b>Importe</b></span>
-                        <span class="col s2 center"><b>Recibo</b></span>
+                        <span class="col s3"><b>Concepto</b></span>
+                        <span class="col s2 right-align"><b>Importe</b></span>
+                        <span class="col s3 center"><b>Recibo</b></span>
+                        <span class="col s1 center"><b>Cobrar</b></span>
                     </div>
                 </li>
 
@@ -122,13 +145,25 @@
                                 <span class="grey-text">Pendiente</span>
                             @endif
                         </span>
-                        <span class="col s4">{{$pago->tipospago->descripcion}}</span>
-                        <span class="col s3  right-align">{{$pago->importe}}</span>
-                        <span class="col s2 center">
+                        <span class="col s3">{{$pago->tipospago->descripcion}}</span>
+                        <span class="col s2  right-align">{{$pago->importe}}</span>
+                        <span class="col s3 center">
                             @if($pago->esRealizado())
                                 <a href="/pdf-reciboPago/{{$pago->id}}/{{$cuota}}/{{$pago->sumPagadoParcial()}}"><i class="material-icons tooltipped" data-tooltip="Imprimir recibo {{$pago->nRecibo}}">print</i></a>
                             @else
                                 <i class="material-icons grey-text text-lighten-1 tooltipped" data-tooltip="Recibo disponible cuando exista fecha de pago">print</i>
+                            @endif
+                        </span>
+                        <span class="col s1 center">
+                            @if(!$pago->esRealizado())
+                                <a href="#marcarPagoModal"
+                                   class="modal-trigger js-marcar-pago tooltipped"
+                                   data-tooltip="Registrar fecha de pago"
+                                   data-action="{{ route('pagosMiembro.update', $pago->id) }}">
+                                    <i class="material-icons green-text text-darken-2">done</i>
+                                </a>
+                            @else
+                                <span class="grey-text">—</span>
                             @endif
                         </span>
                     </div>
@@ -169,6 +204,55 @@
     document.addEventListener('DOMContentLoaded', function() {
         var elems = document.querySelectorAll('.tooltipped');
         var instances = M.Tooltip.init(elems);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var i18n = {
+            months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+            monthsShort: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Set", "Oct", "Nov", "Dic"],
+            weekdays: ["Domingo","Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+            weekdaysShort: ["Dom","Lun", "Mar", "Mie", "Jue", "Vie", "Sab"],
+            weekdaysAbbrev: ["D","L", "M", "M", "J", "V", "S"]
+        };
+        var baseOpts = {
+            firstDay: 1,
+            showClearBtn: true,
+            showMonthAfterYear: true,
+            format: 'dd-mm-yyyy',
+            yearRange: 50,
+            i18n: i18n
+        };
+        /* Fuera del modal: el calendario se coloca junto al input (comportamiento por defecto). */
+        M.Datepicker.init(document.querySelectorAll('.datepicker:not(.datepicker-en-modal)'), baseOpts);
+        /* Dentro de modales: el calendario va al body para no quedar recortado por overflow del modal. */
+        M.Datepicker.init(document.querySelectorAll('.datepicker-en-modal'), Object.assign({}, baseOpts, {
+            container: document.body
+        }));
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        function hoyDDMMAAAA() {
+            var d = new Date();
+            var dd = ('0' + d.getDate()).slice(-2);
+            var mm = ('0' + (d.getMonth() + 1)).slice(-2);
+            return dd + '-' + mm + '-' + d.getFullYear();
+        }
+        document.querySelectorAll('.js-marcar-pago').forEach(function (a) {
+            a.addEventListener('click', function () {
+                var action = a.getAttribute('data-action');
+                var f = document.getElementById('marcarPagoForm');
+                if (action && f) {
+                    f.setAttribute('action', action);
+                }
+                var inp = document.getElementById('marcarPagoFecha');
+                if (inp) {
+                    inp.value = hoyDDMMAAAA();
+                    if (typeof M !== 'undefined' && M.updateTextFields) {
+                        M.updateTextFields();
+                    }
+                }
+            });
+        });
     });
 
 </script>

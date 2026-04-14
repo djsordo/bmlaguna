@@ -164,7 +164,21 @@ class PagosMiembroController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $pago = Pago::find($id);
+        if (! $pago) {
+            abort(404);
+        }
+
+        $f = $request->input('f_pago');
+        if (is_null($f) || trim((string) $f) === '') {
+            $pago->f_pago = date('Y-m-d');
+        } else {
+            $pago->f_pago = date('Y-m-d', strtotime($f));
+        }
+
+        $pago->save();
+
+        return redirect()->back()->with('status', 'Pago marcado como realizado.');
     }
 
     /**
