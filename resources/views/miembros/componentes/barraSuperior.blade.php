@@ -15,9 +15,9 @@
 
         <div class="card col s12">
             <div class="card-content">
-                <span class="card-title">
-                    <div class="col s9">Criterios de búsqueda</div>
-                    <div class="col s3">
+                <div class="row valign-wrapper" style="margin-bottom: 0;">
+                    <div class="col s5"><span class="card-title" style="margin: 0;">Criterios de búsqueda</span></div>
+                    <div class="col s3 right-align">
                         <div class="switch">
                             <label>
                                 Activos
@@ -27,76 +27,92 @@
                             </label>
                         </div>
                     </div>
-                </span>
+                    <div class="col s3 right-align">
+                        <div class="switch">
+                            <label>
+                                Todos
+                                <input type="checkbox" name="socio" value="S" {{ ($socio ?? '') == 'S' ? 'checked' : '' }} onChange="this.form.submit()" />
+                                <span class="lever"></span>
+                                Socios
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col s1 right-align">
+                        <a href="#exportMiembros" class="modal-trigger tooltipped" data-tooltip="Listado Excel de la búsqueda actual"><img src="/images/excel.png" width="32px" alt="Excel"></a>
+                    </div>
+                </div>
+
                 @if (!empty($rolClub ?? ''))
                     <input type="hidden" name="temporada_id" value="{{ $tempActual_id }}">
                 @endif
-                <div class="input-field col s2">
-                    @if (!empty($rolClub ?? ''))
-                        <select id="tempSelect" disabled>
-                    @else
-                        <select id="tempSelect" name="temporada_id">
-                    @endif
-                        <option value="" {{ ($tempActual_id == "") ? 'selected' : ''}}>-- Todas --</option>
-                        @foreach ($temporadas as $temporada)
-                            <option value="{{ $temporada->id }}" {{ ($temporada->id == $tempActual_id) ? 'selected' : ''}}>{{ $temporada->descripcion}}</option>
-                        @endforeach
-                    </select>
-                    <label for="tempSelect">
-                        Temporada
+
+                <div class="row" style="margin-bottom: 0;">
+                    <div class="input-field col s3">
                         @if (!empty($rolClub ?? ''))
-                            <span class="grey-text">(actual)</span>
+                            <select id="tempSelect" disabled>
+                        @else
+                            <select id="tempSelect" name="temporada_id">
                         @endif
-                    </label>
-                </div> 
-
-                <div class="input-field col s2">
-                    <select name="categoria_id" id="catSelect">
-                        <option value="" {{ ($catActual_id == "") ? 'selected' : ''}}>-- Todas --</option>
-                        @foreach ($categorias as $categoria)
-                            <option value="{{ $categoria->id }}" {{ ($categoria->id == $catActual_id) ? 'selected' : ''}}>{{ $categoria->descripcion}}</option>
-                        @endforeach
-                    </select>
-                    <label for="catSelect">Categoría</label>
-                </div>  
-
-                <div class="input-field col s2">
-                    <select name="genero_id" id="genSelect">
-                        <option value="" {{ ($genActual_id == "") ? 'selected' : ''}}>-- Todos --</option>
-                        @foreach ($generos as $genero)
-                            @if ($genero->descripcion != 'mixto')
-                                <option value="{{ $genero->id }}" {{ ($genero->id == $genActual_id) ? 'selected' : ''}}>{{ $genero->descripcion}}</option>
+                            <option value="" {{ ($tempActual_id == "") ? 'selected' : ''}}>-- Todas --</option>
+                            @foreach ($temporadas as $temporada)
+                                <option value="{{ $temporada->id }}" {{ ($temporada->id == $tempActual_id) ? 'selected' : ''}}>{{ $temporada->descripcion}}</option>
+                            @endforeach
+                        </select>
+                        <label for="tempSelect">
+                            Temporada
+                            @if (!empty($rolClub ?? ''))
+                                <span class="grey-text">(actual)</span>
                             @endif
-                        @endforeach
-                    </select>
-                    <label for="genSelect">Género</label>
-                </div>  
+                        </label>
+                    </div>
 
-                <div class="input-field col s2">
-                    <select name="rol_club" id="rolClubSelect">
-                        <option value="" {{ ($rolClub ?? '') == '' ? 'selected' : '' }}>-- Todos --</option>
-                        <option value="jugador" {{ ($rolClub ?? '') == 'jugador' ? 'selected' : '' }}>Jugador</option>
-                        <option value="tecnico" {{ ($rolClub ?? '') == 'tecnico' ? 'selected' : '' }}>Técnico</option>
-                        <option value="familiar" {{ ($rolClub ?? '') == 'familiar' ? 'selected' : '' }}>Familiar</option>
-                    </select>
-                    <label for="rolClubSelect">Rol (club)</label>
+                    <div class="input-field col s3">
+                        <select name="categoria_id" id="catSelect">
+                            <option value="" {{ ($catActual_id == "") ? 'selected' : ''}}>-- Todas --</option>
+                            @foreach ($categorias as $categoria)
+                                <option value="{{ $categoria->id }}" {{ ($categoria->id == $catActual_id) ? 'selected' : ''}}>{{ $categoria->descripcion}}</option>
+                            @endforeach
+                        </select>
+                        <label for="catSelect">Categoría</label>
+                    </div>
+
+                    <div class="input-field col s3">
+                        <select name="genero_id" id="genSelect">
+                            <option value="" {{ ($genActual_id == "") ? 'selected' : ''}}>-- Todos --</option>
+                            @foreach ($generos as $genero)
+                                @if ($genero->descripcion != 'mixto')
+                                    <option value="{{ $genero->id }}" {{ ($genero->id == $genActual_id) ? 'selected' : ''}}>{{ $genero->descripcion}}</option>
+                                @endif
+                            @endforeach
+                        </select>
+                        <label for="genSelect">Género</label>
+                    </div>
+
+                    <div class="input-field col s3">
+                        <select name="rol_club" id="rolClubSelect">
+                            <option value="" {{ ($rolClub ?? '') == '' ? 'selected' : '' }}>-- Todos --</option>
+                            <option value="jugador" {{ ($rolClub ?? '') == 'jugador' ? 'selected' : '' }}>Jugador</option>
+                            <option value="tecnico" {{ ($rolClub ?? '') == 'tecnico' ? 'selected' : '' }}>Técnico</option>
+                            <option value="familiar" {{ ($rolClub ?? '') == 'familiar' ? 'selected' : '' }}>Familiar</option>
+                        </select>
+                        <label for="rolClubSelect">Rol (club)</label>
+                    </div>
                 </div>
 
-                <div class="col s3">
-                    <div class="input-field">
+                <div class="row" style="margin-bottom: 0;">
+                    <div class="input-field col s12">
                         <i class="material-icons prefix">search</i>
                         <input type="text" id="nombreBusqueda" name="nombreBusqueda" autocomplete="off" value="{{$nombreBusqueda}}">
                         <label for="nombreBusqueda">Nombre</label>
                     </div>
-                </div>  
-                
-                <div class="col s1 center"><a href="#exportMiembros" class="modal-trigger tooltipped" data-tooltip="Listado Excel de la búsqueda actual"><img src="/images/excel.png" width="38px"></a></div>
+                </div>
             </div>
         </div>
     </form>
 
     <div id="exportMiembros" class="modal modal-fixed-footer">
-        <form id="excelForm" action="/export-miembros">
+        <form id="excelForm" action="/export-miembros" method="POST">
+            @csrf
             <div class="modal-content">
                 <span class="card col s12 flow-text center">Listado EXCEL de miembros del club</span>
                 {{-- Árbol de Campos --}}
@@ -318,6 +334,8 @@
             <input type="text" id="excelEqui_id" name="excelEqui_id" value="{{null}}" hidden>
             <input type="text" id="excelNombre" name="excelNombre" autocomplete="off" value="{{$nombreBusqueda}}" hidden>
             <input type="text" id="excelBaja" name="excelBaja" autocomplete="off" value="{{$baja}}" hidden>
+            <input type="text" id="excelSocio" name="excelSocio" value="{{ $socio ?? '' }}" hidden>
+            <input type="text" id="excelRolClub" name="excelRolClub" value="{{ $rolClub ?? '' }}" hidden>
             
         </form>
     </div>
@@ -329,6 +347,27 @@
     document.addEventListener('DOMContentLoaded', function() {
         var elems = document.querySelectorAll('select');
         var instances = M.FormSelect.init(elems);
+
+        var excelForm = document.getElementById('excelForm');
+        var criteriosForm = document.getElementById('criteriosForm');
+        if (excelForm && criteriosForm) {
+            excelForm.addEventListener('submit', function () {
+                var valor = function (nombre) {
+                    var el = criteriosForm.querySelector('[name="' + nombre + '"]');
+                    return el ? el.value : '';
+                };
+                var tempEl = criteriosForm.querySelector('[name="temporada_id"]') || document.getElementById('tempSelect');
+                document.getElementById('excelTemp_id').value = tempEl ? tempEl.value : '';
+                document.getElementById('excelCat_id').value = valor('categoria_id');
+                document.getElementById('excelGen_id').value = valor('genero_id');
+                document.getElementById('excelNombre').value = valor('nombreBusqueda');
+                var socioChk = criteriosForm.querySelector('[name="socio"]');
+                document.getElementById('excelSocio').value = (socioChk && socioChk.checked) ? 'S' : '';
+                document.getElementById('excelRolClub').value = valor('rol_club');
+                var bajaChk = criteriosForm.querySelector('[name="baja"]');
+                document.getElementById('excelBaja').value = (bajaChk && bajaChk.checked) ? 'on' : '';
+            });
+        }
     });
 
     document.addEventListener('DOMContentLoaded', function() {

@@ -81,7 +81,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/equipos/{equipo_id}/{miembro_id}/{tipo}/deasignar', 'EquipoController@deasignar')->name('deasignar');
 
-    Route::get('/export-miembros', 'ExcelController@exportMiembros');
+    Route::match(['get', 'post'], '/export-miembros', 'ExcelController@exportMiembros');
 
     Route::get('/export-preinscripciones', 'ExcelController@exportPreinscripciones');
 

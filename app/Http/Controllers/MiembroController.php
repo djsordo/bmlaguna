@@ -74,64 +74,24 @@ class MiembroController extends Controller
         // nombre
         $nombreBusqueda = $request->get('nombreBusqueda');
 
+        // Socio del club (preinscripción de la temporada de búsqueda o actual)
+        $socio = $request->get('socio');
+        if ($socio === '') {
+            $socio = null;
+        }
+
         // Criterios
         $baja = $request->get('baja');
 
-        if (!is_null($baja)){
-            // Miembros dados de baja
-            $miembros = Miembro::whereNotNull('f_baja');
-        }
-        else{
-            $miembros = Miembro::whereNull('f_baja');
-        }
-
-        // Temporada (más eficiente con WHERE EXISTS que con JOIN+GROUP BY)
-        // Para rol_club=familiar no aplicamos filtro por equipos/temporada, porque la mayoría de familiares
-        // no están vinculados a equipos y se perderían del listado.
-        $aplicarFiltroTemporada = !is_null($tempActual_id)
-            && (is_null($rolClub) || $rolClub === '' || $rolClub === 'jugador' || $rolClub === 'tecnico');
-
-        if ($aplicarFiltroTemporada) {
-            $miembros = $miembros->whereExists(function ($q) use ($tempActual_id) {
-                $q->select(DB::raw(1))
-                    ->from('equipo_funcione_miembro as efm')
-                    ->join('equipos as e', 'e.id', '=', 'efm.equipo_id')
-                    ->whereColumn('efm.miembro_id', 'miembros.id')
-                    ->where('e.temporada_id', $tempActual_id);
-            });
-        }
-
-        // Categoria
-        if (!is_null($catActual_id)){
-            $catElegida = Categoria::find($catActual_id);
-
-            $miembros = $miembros->whereYear('f_nacimiento','>=', $catElegida->rangoAnnos($tempElegida)[0])->
-                                whereYear('f_nacimiento','<=', $catElegida->rangoAnnos($tempElegida)[1]);
-        }
-
-        // Género
-        if (!is_null($genActual_id)){
-            $miembros = $miembros->where('miembros.genero_id', $genActual_id);
-        }
-
-        // Nombre
-        if (!is_null($nombreBusqueda)){
-            $miembros = $miembros->where(DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"), "like",  "%$nombreBusqueda%");
-        }
-
-        // Rol en el club (funcione_miembro): filtrar por descripción de función
-        if (!is_null($rolClub) && $rolClub !== '') {
-            $rolClubId = Funcione::where('descripcion', $rolClub)->value('id');
-            if (!is_null($rolClubId)) {
-                $miembros = $miembros->whereExists(function ($q) use ($rolClubId) {
-                    $q->select(DB::raw(1))
-                        ->from('funcione_miembro as fmclub')
-                        ->whereColumn('fmclub.miembro_id', 'miembros.id')
-                        ->where('fmclub.funcione_id', $rolClubId);
-                });
-            }
-        }
-
+        $miembros = Miembro::queryListado([
+            'temporada_id' => $tempActual_id,
+            'categoria_id' => $catActual_id,
+            'genero_id' => $genActual_id,
+            'nombre' => $nombreBusqueda,
+            'baja' => $baja,
+            'socio' => $socio,
+            'rol_club' => $rolClub,
+        ]);
         $miembros = $miembros
                     ->select('miembros.id', 'miembros.nombre', 'miembros.apellido1', 'miembros.apellido2', 'miembros.dorsal', 'miembros.f_baja')
                     ->with(['funcionesClub', 'telefonos' => function ($q) {
@@ -143,7 +103,7 @@ class MiembroController extends Controller
         $vista = $request->get('vista');
 
         $textoBusqueda = $request->get('nombreBusqueda');
-        $path = $request->url().'?temporada_id='.$tempActual_id.'&categoria_id='.$catActual_id.'&genero_id='.$genActual_id.'&rol_club='.$rolClub.'&nombreBusqueda='.$nombreBusqueda.'&baja='.$baja;
+        $path = $request->url().'?temporada_id='.$tempActual_id.'&categoria_id='.$catActual_id.'&genero_id='.$genActual_id.'&rol_club='.$rolClub.'&nombreBusqueda='.$nombreBusqueda.'&baja='.$baja.'&socio='.$socio;
 
         if (!is_null($vista)){
             $path = $path.'&vista='.$vista;
@@ -153,7 +113,7 @@ class MiembroController extends Controller
                     'temporadas', 'tempActual_id', 'tempElegida',
                     'categorias', 'catActual_id',
                     'generos', 'genActual_id',
-                    'nombreBusqueda', 'rolClub'));
+                    'nombreBusqueda', 'rolClub', 'socio'));
     }
 
     /**

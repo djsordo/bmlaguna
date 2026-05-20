@@ -15,15 +15,19 @@ use Illuminate\Support\Str;
 class ExcelController extends Controller
 {
     public function exportMiembros(Request $request){
-        //dd(array_keys($request->all()));
-        //dd($request->all());
+        $vacioANull = function ($valor) {
+            return ($valor === null || $valor === '') ? null : $valor;
+        };
+
         $criterios = [
-            'temporada_id' => $request->input('excelTemp_id'),
-            'categoria_id' => $request->input('excelCat_id'),
-            'genero_id' => $request->input('excelGen_id'),
-            'nombre' => $request->input('excelNombre'),
+            'temporada_id' => $vacioANull($request->input('excelTemp_id')),
+            'categoria_id' => $vacioANull($request->input('excelCat_id')),
+            'genero_id' => $vacioANull($request->input('excelGen_id')),
+            'nombre' => $vacioANull($request->input('excelNombre')),
             'baja' => $request->input('excelBaja'),
-            'equipo_id' => $request->input('excelEqui_id'),
+            'equipo_id' => $vacioANull($request->input('excelEqui_id')),
+            'socio' => $vacioANull($request->input('excelSocio')),
+            'rol_club' => $vacioANull($request->input('excelRolClub')),
         ];
 
         $camposAux =  array_keys($request->all());
@@ -37,7 +41,10 @@ class ExcelController extends Controller
                 $i++;
             }
         }
-/* dd($campos); */
+        if (empty($campos)) {
+            return back()->with('error', 'Debe seleccionar al menos un campo para exportar.');
+        }
+
         return Excel::download(new MiembrosExport($criterios, $campos), 'miembros.xlsx');
     }
 

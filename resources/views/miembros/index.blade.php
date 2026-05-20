@@ -12,7 +12,8 @@
                     'categorias' => $categorias, 'catActual_id' => $catActual_id, 
                     'generos' => $generos, 'genActual_id' => $genActual_id,
                     'nombreBusqueda' => $nombreBusqueda,
-                    'rolClub' => $rolClub])
+                    'rolClub' => $rolClub,
+                    'socio' => $socio])
     @endbarraSuperior
 
     

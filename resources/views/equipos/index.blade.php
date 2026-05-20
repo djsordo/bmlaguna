@@ -76,7 +76,8 @@
 </div>
 
 <div id="exportMiembros" class="modal modal-fixed-footer">
-    <form id="excelForm" action="/export-miembros">
+    <form id="excelForm" action="/export-miembros" method="POST">
+        @csrf
         <div class="modal-content">
             <span class="card col s12 flow-text center">Listado EXCEL de miembros del equipo</span>
             {{-- Árbol de Campos --}}

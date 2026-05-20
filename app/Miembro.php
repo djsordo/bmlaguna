@@ -378,6 +378,122 @@ class Miembro extends Model
         return $query;
     }
 
+    /**
+     * Query del listado de miembros y exportación Excel (mismos criterios de búsqueda).
+     */
+    public static function queryListado(array $criterios)
+    {
+        $vacioANull = function ($valor) {
+            return ($valor === null || $valor === '') ? null : $valor;
+        };
+
+        $temporada_id = $vacioANull($criterios['temporada_id'] ?? null);
+        $categoria_id = $vacioANull($criterios['categoria_id'] ?? null);
+        $genero_id = $vacioANull($criterios['genero_id'] ?? null);
+        $nombre = $vacioANull($criterios['nombre'] ?? $criterios['nombreBusqueda'] ?? null);
+        $baja = $criterios['baja'] ?? null;
+        $socio = $vacioANull($criterios['socio'] ?? null);
+        $rol_club = $vacioANull($criterios['rol_club'] ?? null);
+        $equipo_id = $vacioANull($criterios['equipo_id'] ?? null);
+
+        if (! is_null($rol_club) && $rol_club !== '') {
+            $tActual = Temporada::Tactual();
+            if ($tActual) {
+                $temporada_id = $tActual->id;
+                $tempElegida = $tActual;
+            } else {
+                $tempElegida = is_null($temporada_id) ? null : Temporada::find($temporada_id);
+            }
+        } elseif (is_null($temporada_id)) {
+            $tempElegida = Temporada::Tactual();
+        } else {
+            $tempElegida = Temporada::find($temporada_id);
+        }
+
+        if (! is_null($baja)) {
+            $miembros = static::whereNotNull('f_baja');
+        } else {
+            $miembros = static::whereNull('f_baja');
+        }
+
+        $aplicarFiltroTemporada = ! is_null($temporada_id)
+            && (is_null($rol_club) || $rol_club === '' || $rol_club === 'jugador' || $rol_club === 'tecnico');
+
+        if ($aplicarFiltroTemporada) {
+            $miembros = $miembros->whereExists(function ($q) use ($temporada_id) {
+                $q->select(DB::raw(1))
+                    ->from('equipo_funcione_miembro as efm')
+                    ->join('equipos as e', 'e.id', '=', 'efm.equipo_id')
+                    ->whereColumn('efm.miembro_id', 'miembros.id')
+                    ->where('e.temporada_id', $temporada_id);
+            });
+        }
+
+        if (! is_null($equipo_id)) {
+            $miembros = $miembros->whereExists(function ($q) use ($equipo_id, $temporada_id) {
+                $q->select(DB::raw(1))
+                    ->from('equipo_funcione_miembro as efm_eq')
+                    ->join('equipos as e_eq', 'e_eq.id', '=', 'efm_eq.equipo_id')
+                    ->whereColumn('efm_eq.miembro_id', 'miembros.id')
+                    ->where('e_eq.id', $equipo_id);
+                if (! is_null($temporada_id)) {
+                    $q->where('e_eq.temporada_id', $temporada_id);
+                }
+            });
+        }
+
+        if (! is_null($categoria_id)) {
+            $catElegida = Categoria::find($categoria_id);
+            if ($catElegida && $tempElegida) {
+                $miembros = $miembros->whereYear('f_nacimiento', '>=', $catElegida->rangoAnnos($tempElegida)[0])
+                    ->whereYear('f_nacimiento', '<=', $catElegida->rangoAnnos($tempElegida)[1]);
+            }
+        }
+
+        if (! is_null($genero_id)) {
+            $miembros = $miembros->where('miembros.genero_id', $genero_id);
+        }
+
+        if (! is_null($nombre)) {
+            $miembros = $miembros->where(
+                DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"),
+                'like',
+                "%$nombre%"
+            );
+        }
+
+        if (! is_null($socio)) {
+            $temporadaSocioId = $tempElegida ? $tempElegida->id : null;
+            if (is_null($temporadaSocioId)) {
+                $tActual = Temporada::Tactual();
+                $temporadaSocioId = $tActual ? $tActual->id : null;
+            }
+            if (! is_null($temporadaSocioId)) {
+                $miembros = $miembros->whereExists(function ($q) use ($temporadaSocioId, $socio) {
+                    $q->select(DB::raw(1))
+                        ->from('preinscripcions as preins_socio')
+                        ->whereColumn('preins_socio.miembro_id', 'miembros.id')
+                        ->where('preins_socio.temporada_id', $temporadaSocioId)
+                        ->where('preins_socio.socio', $socio);
+                });
+            }
+        }
+
+        if (! is_null($rol_club) && $rol_club !== '') {
+            $rolClubId = Funcione::where('descripcion', $rol_club)->value('id');
+            if (! is_null($rolClubId)) {
+                $miembros = $miembros->whereExists(function ($q) use ($rolClubId) {
+                    $q->select(DB::raw(1))
+                        ->from('funcione_miembro as fmclub')
+                        ->whereColumn('fmclub.miembro_id', 'miembros.id')
+                        ->where('fmclub.funcione_id', $rolClubId);
+                });
+            }
+        }
+
+        return $miembros;
+    }
+
     // Baja de un miembro del club, a la fecha dada
     public function baja($f_baja){
         $this->f_baja = $f_baja;
@@ -645,9 +761,15 @@ class Miembro extends Model
 
         foreach ($this->funciones as $funcion){
             $equipo = Equipo::find($funcion->pivot->equipo_id);
-            $categoria = Categoria::find($equipo{'categoria_id'});
-            $genero = Genero::find($equipo{'genero_id'});
-            $temporada = Temporada::find($equipo{'temporada_id'});
+            if (is_null($equipo)) {
+                continue;
+            }
+            $categoria = Categoria::find($equipo->categoria_id);
+            $genero = Genero::find($equipo->genero_id);
+            $temporada = Temporada::find($equipo->temporada_id);
+            if (is_null($categoria) || is_null($genero) || is_null($temporada)) {
+                continue;
+            }
 
             if (($funcion->descripcion != 'familiar') && ($temporada->id == $tempSel->id))  {
                 $retorno->push([ 'id'=>$equipo->id,

@@ -32,7 +32,7 @@ use Maatwebsite\Excel\Concerns\RegistersEventListeners;
 use Maatwebsite\Excel\Events\BeforeSheet;
 use Maatwebsite\Excel\Events\AfterSheet;
 
-class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatting, WithMapping, ShouldAutoSize, Withdrawings, WithEvents, WithCustomStartCell
+class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatting, WithMapping, ShouldAutoSize, WithDrawings, WithEvents, WithCustomStartCell
 {
     use RegistersEventListeners;
 
@@ -47,21 +47,42 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
     private $campos;
     private $posFecha;
     private $baja;
+    private $socio;
+    private $rol_club;
+    private $criterios;
    
     public function __construct($criterios, $campos){
-        /* dd($criterios);  */
-        $this->temporada_id = $criterios['temporada_id'];
-        $this->categoria_id = $criterios['categoria_id'];
-        $this->genero_id = $criterios['genero_id'];
-        $this->nombre = $criterios['nombre'];
+        $this->criterios = $criterios;
+        $this->temporada_id = $criterios['temporada_id'] ?? null;
+        $this->categoria_id = $criterios['categoria_id'] ?? null;
+        $this->genero_id = $criterios['genero_id'] ?? null;
+        $this->nombre = $criterios['nombre'] ?? null;
         $this->campos = $campos;
-        $this->baja = $criterios['baja'];
-        $this->equipo_id = $criterios['equipo_id'];
+        $this->baja = $criterios['baja'] ?? null;
+        $this->equipo_id = $criterios['equipo_id'] ?? null;
+        $this->socio = $criterios['socio'] ?? null;
+        $this->rol_club = $criterios['rol_club'] ?? null;
     }
 
     public function startCell(): string
     {
         return 'A1';
+    }
+
+    private function temporadaElegida()
+    {
+        if (is_null($this->temporada_id)) {
+            return Temporada::Tactual();
+        }
+
+        return Temporada::find($this->temporada_id);
+    }
+
+    private function campoSeleccionado($nombreCampo)
+    {
+        return Arr::first($this->campos, function ($value, $key) use ($nombreCampo) {
+            return $value == $nombreCampo;
+        });
     }
 
     public function headings(): array
@@ -203,20 +224,19 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
     public function map($miembro): array
     {
         $miembro = Miembro::find($miembro->id);
+        $tempElegida = $this->temporadaElegida();
 
         $campos = [];
         $i = 0;
 
         /* Dorsal */
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkDorsal';})){
+        if ($this->campoSeleccionado('checkDorsal')){
             $campos[$i] = $miembro->dorsal;
             $i++;
         }
 
         /* Datos Personales */
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkNombre';})){
+        if ($this->campoSeleccionado('checkNombre')){
             $campos[$i] = $miembro->nombre;
             $i++;
             $campos[$i] = $miembro->apellido1;
@@ -224,17 +244,15 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
             $campos[$i] = $miembro->apellido2;
             $i++;
         }
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkNIF';})){
+        if ($this->campoSeleccionado('checkNIF')){
             $campos[$i] = $miembro->nif;
             $i++;
         }
 
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkFNac';})){
-            
+        if ($this->campoSeleccionado('checkFNac')){
             if (!is_null($miembro->f_nacimiento)){
-                $campos[$i] = Date::dateTimeToExcel(DateTime::createFromFormat('Y-m-d', $miembro->f_nacimiento));
+                $fecha = DateTime::createFromFormat('Y-m-d', $miembro->f_nacimiento);
+                $campos[$i] = $fecha ? Date::dateTimeToExcel($fecha) : null;
             }
             else{
                 $campos[$i] = null;
@@ -243,19 +261,14 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
             $i++;
         }
 
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkGenero';})){
-            if (!is_null($miembro->genero_id)){
-                $campos[$i] = $miembro->genero->descripcion;
-            }
-            else{
-                $campos[$i] = '';
-            }
+        if ($this->campoSeleccionado('checkGenero')){
+            $campos[$i] = ($miembro->genero_id && $miembro->genero)
+                ? $miembro->genero->descripcion
+                : '';
             $i++;
         }
 
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkCentro';})){
+        if ($this->campoSeleccionado('checkCentro')){
             $campos[$i] = $miembro->centroEducativo;
             $i++;
         }
@@ -328,11 +341,15 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
     
             if (!is_null($miembro->responsable1_id)){
                 $responsable1V = Miembro::find($miembro->responsable1_id);
-                $responsable1 = $responsable1V->nombre.' '.$responsable1V->apellido1.' '.$responsable1V->apellido2;
+                if ($responsable1V) {
+                    $responsable1 = trim($responsable1V->nombre.' '.$responsable1V->apellido1.' '.$responsable1V->apellido2);
+                }
             }
             if (!is_null($miembro->responsable2_id)){
                 $responsable2V = Miembro::find($miembro->responsable2_id);
-                $responsable2 = $responsable2V->nombre.' '.$responsable2V->apellido1.' '.$responsable2V->apellido2;
+                if ($responsable2V) {
+                    $responsable2 = trim($responsable2V->nombre.' '.$responsable2V->apellido1.' '.$responsable2V->apellido2);
+                }
             }
             
             $campos[$i] = $responsable1;
@@ -342,33 +359,17 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
         }
         /* Fin Familiares */
         /* Categoría */
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkCategoria';})){
-
-            if (is_null($this->temporada_id)){
-                $tempElegida = Temporada::Tactual();
-            }
-            else{
-                $tempElegida = Temporada::find($this->temporada_id);
-            }
-
-            $campos[$i] = $miembro->categoria($tempElegida->temporada)->descripcion;
+        if ($this->campoSeleccionado('checkCategoria')){
+            $campos[$i] = ($tempElegida)
+                ? $miembro->categoria($tempElegida->temporada)->descripcion
+                : '';
             $i++;
         }
         /* Fin Categoría */
         /* Nombre del Equipo */
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkNomEquipo';})){
-
-            if (is_null($this->temporada_id)){
-                $tempElegida = Temporada::Tactual();
-            }
-            else{
-                $tempElegida = Temporada::find($this->temporada_id);
-            }
-
+        if ($this->campoSeleccionado('checkNomEquipo')){
             $campos[$i] = '';
-            foreach ($miembro->equipoTemp($tempElegida) as $equipo){
+            foreach ($tempElegida ? $miembro->equipoTemp($tempElegida) : [] as $equipo){
                 if ($campos[$i] != ''){
                     $campos[$i] = $campos[$i] . "\r\n" . $equipo['equipo'] .' '. $equipo['categoria'] .' '. $equipo['genero'];
                 }
@@ -380,65 +381,48 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
         }
         /* Fin Nombre del Equipo */
         /* Función en el Equipo */
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkFuncion';})){
-                if (is_null($this->temporada_id)){
-                    $tempElegida = Temporada::Tactual();
+        if ($this->campoSeleccionado('checkFuncion')){
+            $campos[$i] = '';
+            foreach ($tempElegida ? $miembro->equipoTemp($tempElegida) : [] as $equipo){
+                if (is_null($this->equipo_id) || ($this->equipo_id == $equipo['id'])) {
+                    if ($campos[$i] != ''){
+                        $campos[$i] = $campos[$i] . "\r\n" . $equipo['funcion'];
+                    }
+                    else{
+                        $campos[$i] = $campos[$i] . $equipo['funcion'];
+                    }
                 }
-                else{
-                    $tempElegida = Temporada::find($this->temporada_id);
-                }
-    
-                $campos[$i] = '';
-                foreach ($miembro->equipoTemp($tempElegida) as $equipo){
-                    if (is_null($this->equipo_id) || ($this->equipo_id == $equipo['id']) )
-                        if ($campos[$i] != ''){
-                            $campos[$i] = $campos[$i] . "\r\n" . $equipo['funcion'];
-                        }
-                        else{
-                            $campos[$i] = $campos[$i] . $equipo['funcion'];
-                        }
-                }
-                $i++;
             }
+            $i++;
+        }
         /* Fin Función en el Equipo */
         /* Estado de la Preinscripción */
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkPreinscripcion';})){
-            if (is_null($this->temporada_id)){
-                $tempElegida = Temporada::Tactual();
-            }
-            else{
-                $tempElegida = Temporada::find($this->temporada_id);
-            }
-
-            $preinscripcion = $miembro->preinscripcionTemp($tempElegida)->first();
-            if (!is_null($preinscripcion)){
-                $campos[$i] = $miembro->preinscripcionTemp($tempElegida)->first()->estado;
-            }
-            else{
-                $campos[$i] = 'No preinscrito';
-            }
+        if ($this->campoSeleccionado('checkPreinscripcion')){
+            $preinscripcion = $tempElegida
+                ? $miembro->preinscripcionTemp($tempElegida)->first()
+                : null;
+            $campos[$i] = $preinscripcion ? $preinscripcion->estado : 'No preinscrito';
             $i++;
         }
         /* Fin Estado de la Preinscripción */
         /* Pagos */
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkPagado';})){
-            if (is_null($this->temporada_id)){
-                $tempElegida = Temporada::Tactual();
+        if ($tempElegida && ($this->campoSeleccionado('checkPagado') || $this->campoSeleccionado('checkTotalPagar'))){
+            $pagos = $miembro->pagosTemp($tempElegida);
+            if ($this->campoSeleccionado('checkPagado')){
+                $campos[$i] = $pagos[0];
+                $i++;
             }
-            else{
-                $tempElegida = Temporada::find($this->temporada_id);
+            if ($this->campoSeleccionado('checkTotalPagar')){
+                $campos[$i] = $pagos[1];
+                $i++;
             }
-
-
-            $campos[$i] = $miembro->pagosTemp($tempElegida)[0];
+        }
+        elseif ($this->campoSeleccionado('checkPagado')) {
+            $campos[$i] = 0;
             $i++;
         }
-        if (Arr::first($this->campos, function ($value, $key) {
-            return $value == 'checkTotalPagar';})){
-                $campos[$i] = $miembro->pagosTemp($tempElegida)[1];
+        elseif ($this->campoSeleccionado('checkTotalPagar')) {
+            $campos[$i] = 0;
             $i++;
         }
         /* Fin Pagos */
@@ -462,62 +446,11 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
 
     public function collection()
     {
-        /* dd($this); */
+        $miembros = Miembro::queryListado($this->criterios);
 
-        if (is_null($this->temporada_id)){
-            $tempElegida = Temporada::Tactual();
-        }
-        else{
-            $tempElegida = Temporada::find($this->temporada_id);
-        }
+        $this->totalReg = $miembros->distinct()->count('miembros.id');
 
-
-        // Criterios
-                
-        if (!is_null($this->baja)){
-            // Miembros dados de baja
-            $miembros = Miembro::whereNotNull('f_baja');
-        }
-        else{
-            $miembros = Miembro::whereNull('f_baja');
-        }
-
-        //Temporada
-        if (!is_null($this->temporada_id)){
-            $miembros = $miembros->join('equipo_funcione_miembro', 'miembros.id', '=', 'equipo_funcione_miembro.miembro_id')->
-                            join('equipos', 'equipos.id', '=', 'equipo_funcione_miembro.equipo_id')->
-                            where('equipos.temporada_id', $this->temporada_id);
-            // Equipo                            
-            if (!is_null($this->equipo_id)){                            
-                $miembros = $miembros->where('equipos.id', $this->equipo_id);
-            }
-
-            $miembros = $miembros->select('miembros.id');
-        }
-
-        // Categoria
-        if (!is_null($this->categoria_id)){
-            $catElegida = Categoria::find($this->categoria_id);
-
-            $miembros = $miembros->whereYear('f_nacimiento','>=', $catElegida->rangoAnnos($tempElegida)[0])->
-                                whereYear('f_nacimiento','<=', $catElegida->rangoAnnos($tempElegida)[1]);
-        }
-        
-        // Género
-        if (!is_null($this->genero_id)){
-            $miembros = $miembros->where('miembros.genero_id', $this->genero_id);
-        }
-
-        // Nombre
-        if (!is_null($this->nombre)){
-            $miembros = $miembros->where(DB::raw("concat(miembros.nombre, ' ', miembros.apellido1, ' ', IFNULL(miembros.apellido2, ' '))"), "like",  "%$this->nombre%");
-        }
-
-        $this->totalReg = $miembros->distinct()->count();
-        $miembros = $miembros->distinct()->get();
-
-        return $miembros;
-       
+        return $miembros->select('miembros.id')->distinct()->get();
     } 
 
     public function drawings()
@@ -527,7 +460,7 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
             $drawing->setDescription('Escudo');
             $drawing->setPath(public_path('/images/escudo.png'));
             $drawing->setHeight(75);
-            $drawing->setCoordinates('A1');
+            $drawing->setCoordinates('A2');
 
             return $drawing;
         }
@@ -615,6 +548,8 @@ class MiembrosExport implements FromCollection, WithHeadings, WithColumnFormatti
             /* Fin Texto Nombre */
 
             /* Autofiltro */
-            $event->sheet->setAutoFilter('A6:'.$alfabeto[$campos-1].'6');
+            if ($campos > 0) {
+                $event->sheet->setAutoFilter('A6:'.$alfabeto[$campos - 1].'6');
+            }
         }
 }
