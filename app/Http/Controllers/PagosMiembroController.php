@@ -99,7 +99,7 @@ class PagosMiembroController extends Controller
         $pago->temporada_id = $request->input('temporada_id');
         $pago->miembro_id = $request->input('miembro_id');
         $pago->tipospago_id = $request->input('tipospago_id');
-        $pago->f_pago = date('Y-m-d', strtotime($request->input('f_pago')) );
+        $pago->marcarComoPagado(date('Y-m-d', strtotime($request->input('f_pago'))));
      
         $temporada = Temporada::find($pago->temporada_id);
         $pago->nRecibo = 'R'. $temporada->temporada.'-'.Contador_recibo::sumar($temporada);
@@ -171,9 +171,9 @@ class PagosMiembroController extends Controller
 
         $f = $request->input('f_pago');
         if (is_null($f) || trim((string) $f) === '') {
-            $pago->f_pago = date('Y-m-d');
+            $pago->marcarComoPagado();
         } else {
-            $pago->f_pago = date('Y-m-d', strtotime($f));
+            $pago->marcarComoPagado(date('Y-m-d', strtotime($f)));
         }
 
         $pago->save();

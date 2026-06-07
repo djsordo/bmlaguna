@@ -89,5 +89,6 @@ Después de eso, los despliegues futuros vuelven a usar solo `php artisan migrat
 
 ## Notas
 
+- **APP_URL**: debe coincidir con el dominio público (p. ej. `http://bmlaguna.duckdns.org`). Los enlaces firmados de preinscripción del correo se generan con esta URL; si es incorrecta, los enlaces del email no funcionarán.
 - **PHP-FPM**: el servidor puede tener varios (`php8.0-fpm`, etc.); el sitio que sirve esta app debe usar **`php7.3-fpm`** (comprobar `fastcgi_pass` en la config de Nginx del virtual host).
 - **Colas / Supervisor**: si en el futuro se usan colas, añadir `php artisan queue:restart` y el reinicio de Supervisor según corresponda.

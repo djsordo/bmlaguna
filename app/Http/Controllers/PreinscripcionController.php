@@ -4,6 +4,8 @@ namespace BMLaguna\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 use BMLaguna\Preinscripcion;
 use BMLaguna\Genero;
@@ -26,6 +28,10 @@ use JavaScript;
 
 class PreinscripcionController extends Controller
 {
+    const PREINS_SESSION_MIEMBRO = 'preins_public_miembro_id';
+    const PREINS_SESSION_OK_AT = 'preins_public_ok_at';
+    const PREINS_SESSION_HOURS = 4;
+
     /**
      * Display a listing of the resource.
      *
@@ -133,32 +139,215 @@ class PreinscripcionController extends Controller
      */
     public function create(Request $request, $miembro_id = 0)
     {
-        //$funciones = Funcione::all();
-        //$responsables = Miembro::whereNull('f_nacimiento')->orWhere('f_nacimiento', '<', '2000/01/01')->get();
+        return $this->buildCreateFormView($miembro_id, null);
+    }
+
+    /**
+     * Formulario público de preinscripción (enlace firmado del correo).
+     */
+    public function createPublic($miembro_id)
+    {
+        $miembro = Miembro::find($miembro_id);
+        if (is_null($miembro)) {
+            abort(404);
+        }
+
+        $temporada = Temporada::actual();
+        if (is_null($temporada)) {
+            abort(503, 'No hay temporada de preinscripción activa.');
+        }
+
+        $preExiste = Preinscripcion::where('miembro_id', $miembro_id)
+            ->where('temporada_id', $temporada->id)
+            ->first();
+        if (! is_null($preExiste)) {
+            return view('preinscripciones.existe', compact('preExiste'));
+        }
+
+        session([
+            self::PREINS_SESSION_MIEMBRO => (int) $miembro_id,
+            self::PREINS_SESSION_OK_AT => now()->toDateTimeString(),
+        ]);
+
+        return $this->buildCreateFormView($miembro_id, true);
+    }
+
+    private function buildCreateFormView($miembro_id, $quitaBarra)
+    {
         $generos = Genero::where('descripcion', '!=', 'mixto')->get();
         $temporada = Temporada::actual();
         $miembro = Miembro::find($miembro_id);
-        if (!is_null($miembro)){
+        if (! is_null($miembro)) {
             $resp1 = Miembro::find($miembro->responsable1_id);
             $resp2 = Miembro::find($miembro->responsable2_id);
-        }
-        else{
+        } else {
             $resp1 = null;
             $resp2 = null;
         }
         $telefono = Telefono::where('miembro_id', $miembro_id)->first();
         $email = Email::where('miembro_id', $miembro_id)->first();
+        $dorsales = range(1, 99);
 
-//dd($request->route()->uri);
-        if ($request->route()->uri == 'crear-preins/{miembro_id}'){
-            $quitaBarra = true;
-        }
-        else{
-            $quitaBarra = null;
-        }
-        $dorsales = range(1,99);
+        return view('preinscripciones.create', compact(
+            'generos', 'temporada', 'miembro', 'resp1', 'resp2', 'telefono', 'email', 'quitaBarra', 'dorsales'
+        ));
+    }
 
-        return view('preinscripciones.create', compact('generos', 'temporada', 'miembro', 'resp1', 'resp2', 'telefono', 'email', 'quitaBarra', 'dorsales'));
+    private function preinscripcionDuplicadaEnTemporadaActual($miembro_id)
+    {
+        $temporada = Temporada::actual();
+        if (is_null($temporada) || empty($miembro_id)) {
+            return null;
+        }
+
+        return Preinscripcion::where('miembro_id', $miembro_id)
+            ->where('temporada_id', $temporada->id)
+            ->first();
+    }
+
+    private function esMayorDeEdad(?string $fNacimiento): bool
+    {
+        if (empty($fNacimiento)) {
+            return false;
+        }
+
+        return Carbon::parse($fNacimiento)->age >= 18;
+    }
+
+    private function validarPreinscripcion(Request $request): void
+    {
+        $mayor = $this->esMayorDeEdad($request->input('f_nacimiento'));
+
+        $request->validate([
+            'f_nacimiento' => 'required|date',
+            'modalidad_cuotas' => 'required|integer|in:1,2,3',
+            'centroEducativo' => $mayor ? 'nullable|string|max:255' : 'required|string|max:255',
+            'nombreR1' => $mayor ? 'nullable|string|max:255' : 'required|string|max:255',
+            'apellido1R1' => $mayor ? 'nullable|string|max:255' : 'required|string|max:255',
+        ], [
+            'centroEducativo.required' => 'El centro educativo es obligatorio para menores de 18 años.',
+            'nombreR1.required' => 'El nombre del padre/madre o tutor es obligatorio para menores de 18 años.',
+            'apellido1R1.required' => 'El primer apellido del padre/madre o tutor es obligatorio para menores de 18 años.',
+        ]);
+    }
+
+    private function normalizarCampoOpcional($value): ?string
+    {
+        if (! is_string($value)) {
+            return is_null($value) ? null : (string) $value;
+        }
+
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
+    }
+
+    private function aplicarModalidadCuota(Preinscripcion $preinscripcion, Request $request)
+    {
+        $modalidad = (int) $request->input('modalidad_cuotas');
+        $preinscripcion->modalidad_cuotas = $modalidad;
+        $preinscripcion->importePago = $preinscripcion->importePrimerPlazo($modalidad);
+
+        return $preinscripcion->importePago;
+    }
+
+    private function ensureMiembroParaPagos(Preinscripcion $preinscripcion)
+    {
+        if (! is_null($preinscripcion->miembro_id)) {
+            return;
+        }
+
+        $miembro = Miembro::nuevo($preinscripcion);
+        $preinscripcion->miembro_id = $miembro->id;
+        $preinscripcion->save();
+    }
+
+    private function queryPagosPreinscripcion(Preinscripcion $preinscripcion)
+    {
+        $query = Pago::where('miembro_id', $preinscripcion->miembro_id)
+            ->where('temporada_id', $preinscripcion->temporada_id);
+
+        if ($preinscripcion->modalidad_cuotas) {
+            $tipospagoIds = Tipospago::tiposPorModalidad($preinscripcion->modalidad_cuotas)->pluck('id');
+            $query->whereIn('tipospago_id', $tipospagoIds);
+        } else {
+            $legacyId = Tipospago::where('descripcion', 'Preinscripción')->value('id');
+            if ($legacyId) {
+                $query->where('tipospago_id', $legacyId);
+            }
+        }
+
+        return $query;
+    }
+
+    private function generarNumeroRecibo(Temporada $temporada)
+    {
+        return 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
+    }
+
+    private function crearPagosPreinscripcion(Preinscripcion $preinscripcion)
+    {
+        if (is_null($preinscripcion->modalidad_cuotas) || is_null($preinscripcion->miembro_id)) {
+            return;
+        }
+
+        $plazos = $preinscripcion->plazosPago();
+        $tipospagoIds = collect($plazos)->pluck('tipospago_id');
+
+        $yaExisten = Pago::where('miembro_id', $preinscripcion->miembro_id)
+            ->where('temporada_id', $preinscripcion->temporada_id)
+            ->whereIn('tipospago_id', $tipospagoIds)
+            ->exists();
+
+        if ($yaExisten) {
+            return;
+        }
+
+        $temporada = Temporada::find($preinscripcion->temporada_id);
+        $primerRecibo = null;
+
+        foreach ($plazos as $plazo) {
+            $nRecibo = $this->generarNumeroRecibo($temporada);
+            if (is_null($primerRecibo)) {
+                $primerRecibo = $nRecibo;
+            }
+
+            Pago::create([
+                'miembro_id' => $preinscripcion->miembro_id,
+                'temporada_id' => $preinscripcion->temporada_id,
+                'tipospago_id' => $plazo['tipospago_id'],
+                'importe' => $plazo['importe'],
+                'f_vencimiento' => $plazo['f_vencimiento'],
+                'f_pago' => null,
+                'nRecibo' => $nRecibo,
+                'estado' => Pago::ESTADO_PENDIENTE,
+            ]);
+        }
+
+        if ($primerRecibo) {
+            $preinscripcion->nRecibo = $primerRecibo;
+            $preinscripcion->save();
+        }
+    }
+
+    private function assertPublicPreinsSession(Request $request)
+    {
+        $miembroId = (int) $request->input('miembro_id');
+        $sessionMiembro = session(self::PREINS_SESSION_MIEMBRO);
+        $sessionOkAt = session(self::PREINS_SESSION_OK_AT);
+
+        if (is_null($sessionMiembro) || is_null($sessionOkAt)) {
+            abort(403, 'Debe acceder al formulario mediante el enlace del correo.');
+        }
+
+        if ((int) $sessionMiembro !== $miembroId) {
+            abort(403, 'La sesión de preinscripción no coincide con el miembro indicado.');
+        }
+
+        if (Carbon::parse($sessionOkAt)->addHours(self::PREINS_SESSION_HOURS)->isPast()) {
+            session()->forget([self::PREINS_SESSION_MIEMBRO, self::PREINS_SESSION_OK_AT]);
+            abort(403, 'El enlace de preinscripción ha caducado. Solicite un nuevo correo al club.');
+        }
     }
 
     /**
@@ -169,13 +358,17 @@ class PreinscripcionController extends Controller
      */
     public function store(Request $request)
     {
-        // Ver si ya existe alguna preinscripción dada de alta
-        // Si el miembro antiguo ya tiene preinscripción
-/*         $preExiste = Preinscripcion::where('miembro_id', $request->input('miembro_id'))->first();
-        if (!is_null($preExiste)){
-            return view("preinscripciones.existe", compact('preExiste'));
+        if (! Auth::check()) {
+            $this->assertPublicPreinsSession($request);
         }
- */
+
+        if (! is_null($request->input('miembro_id'))) {
+            $preExiste = $this->preinscripcionDuplicadaEnTemporadaActual($request->input('miembro_id'));
+            if (! is_null($preExiste)) {
+                return view('preinscripciones.existe', compact('preExiste'));
+            }
+        }
+
         // Si el NIF ya existe en la preinscripción en la temporada actual.
         if (!is_null($request->input('nif'))){
             $preExiste = Preinscripcion::where('nif', $request->input('nif'))->where('temporada_id',Temporada::actual()->id)->first();
@@ -183,6 +376,8 @@ class PreinscripcionController extends Controller
                 return view("preinscripciones.existe", compact('preExiste'));
             }
         }
+
+        $this->validarPreinscripcion($request);
 
         // Generar nùmero de preinscripción
         $nPreinscripcion = time();
@@ -200,15 +395,15 @@ class PreinscripcionController extends Controller
         $miembro->nombre = $request->input('nombre');
         $miembro->apellido1 = $request->input('apellido1');
         $miembro->apellido2 = $request->input('apellido2');
-        $miembro->centroEducativo = $request->input('centroEducativo');
+        $miembro->centroEducativo = $this->normalizarCampoOpcional($request->input('centroEducativo'));
         $miembro->nomSerigrafia = $request->input('nomSerigrafia');
         $miembro->dorsal = $request->input('dorsal');
         $miembro->domicilio = $request->input('domicilio');
         $miembro->c_postal = $request->input('c_postal');
         $miembro->provincia = $request->input('provincia');
         $miembro->localidad = $request->input('localidad');
-        $miembro->nombreR1 = $request->input('nombreR1');
-        $miembro->apellido1R1 = $request->input('apellido1R1');
+        $miembro->nombreR1 = $this->normalizarCampoOpcional($request->input('nombreR1'));
+        $miembro->apellido1R1 = $this->normalizarCampoOpcional($request->input('apellido1R1'));
         $miembro->apellido2R1 = $request->input('apellido2R1');
         $miembro->nombreR2 = $request->input('nombreR2');
         $miembro->apellido1R2 = $request->input('apellido1R2');
@@ -234,19 +429,15 @@ class PreinscripcionController extends Controller
         $miembro->obsAlergia = $request->input('obsAlergia');
         $miembro->obsOtras = $request->input('obsOtras');
 
-        // Importe de la cuota
-        $vPago = $request->input('importePago');
-        if ($vPago == 0){
-            // Ver la cuota correspondiente
-            $vPago = $miembro->cuota();
-        }
-        else {
-            $vPago = $miembro->cuota()/2;
-        }
+        $vPago = $this->aplicarModalidadCuota($miembro, $request);
 
-        $miembro->importePago = $vPago;
+        DB::transaction(function () use ($miembro) {
+            $miembro->save();
+            $this->ensureMiembroParaPagos($miembro);
+            $this->crearPagosPreinscripcion($miembro);
+        });
 
-        $miembro->save();
+        session()->forget([self::PREINS_SESSION_MIEMBRO, self::PREINS_SESSION_OK_AT]);
 
         // 2.- Enviar correo para el pago
          $for = $request->input('email');
@@ -302,6 +493,13 @@ class PreinscripcionController extends Controller
     public function destroy($id)
     {
         $preinscripcion = Preinscripcion::find($id);
+
+        if ($preinscripcion && $preinscripcion->miembro_id) {
+            $this->queryPagosPreinscripcion($preinscripcion)
+                ->whereNull('f_pago')
+                ->delete();
+        }
+
         $preinscripcion->delete();
 
         return redirect()->back()->with('status', 'Preinscripción borrada');
@@ -309,38 +507,46 @@ class PreinscripcionController extends Controller
 
     /* Esta función pasa al estado pagado una preinscripción */
     public function pagado(Preinscripcion $preinscripcion){
-        //dd($id);
+        $this->ensureMiembroParaPagos($preinscripcion);
 
-        // 1.- Sacar datos de la preinscripcion
-        //$preinscripcion = new Preinscripcion();
-        //$preinscripcion = Preinscripcion::find($id);
-
-        // 2.- Actualizar campos de estado y fecha de pago.
-        $preinscripcion->estado = 'Pagado';
-        $preinscripcion->f_pago = date('Y-m-d', time() );
-
-        $temporada = Temporada::find($preinscripcion->temporada_id);
-        $preinscripcion->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
-
-        // Si la preinscripción es de un jugador nuevo, añadir este a los miembros
-        if (is_null($preinscripcion->miembro_id)){
-            // Es nuevo. Lo metemos en la base de datos.
-            $miembro = Miembro::nuevo($preinscripcion);
-            $preinscripcion->miembro_id = $miembro->id;
+        if ($preinscripcion->modalidad_cuotas) {
+            $this->crearPagosPreinscripcion($preinscripcion);
         }
 
-        // añadimos el pago
-        $pago = new Pago();
+        $pago = $this->queryPagosPreinscripcion($preinscripcion)
+            ->where(function ($q) {
+                $q->whereNull('f_pago')->orWhere('f_pago', '');
+            })
+            ->orderBy('f_vencimiento')
+            ->orderBy('id')
+            ->first();
 
-        $pago->importe = $preinscripcion->importePago;
-        $pago->temporada_id = $preinscripcion->temporada_id;
-        $pago->miembro_id = $preinscripcion->miembro_id;
-        $pago->nRecibo = $preinscripcion -> nRecibo;
-        $pago->tipospago_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
-        $pago->f_pago = date('Y-m-d', strtotime($preinscripcion->f_pago) );
+        if (is_null($pago) && is_null($preinscripcion->modalidad_cuotas)) {
+            $temporada = Temporada::find($preinscripcion->temporada_id);
+            $preinscripcion->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
 
-        $pago->save();
+            $pago = new Pago();
+            $pago->importe = $preinscripcion->importePago;
+            $pago->temporada_id = $preinscripcion->temporada_id;
+            $pago->miembro_id = $preinscripcion->miembro_id;
+            $pago->nRecibo = $preinscripcion->nRecibo;
+            $pago->tipospago_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
+            $pago->marcarComoPagado();
+            $pago->save();
+        } elseif (is_null($pago)) {
+            return redirect()->back()->withErrors(['No hay pagos pendientes para esta preinscripción.']);
+        } else {
+            $temporada = Temporada::find($preinscripcion->temporada_id);
+            if (empty($pago->nRecibo)) {
+                $pago->nRecibo = $this->generarNumeroRecibo($temporada);
+            }
+            $pago->marcarComoPagado();
+            $pago->save();
+            $preinscripcion->nRecibo = $pago->nRecibo;
+        }
 
+        $preinscripcion->estado = 'Pagado';
+        $preinscripcion->f_pago = date('Y-m-d');
         $preinscripcion->save();
 
         $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
@@ -359,23 +565,21 @@ class PreinscripcionController extends Controller
     }
 
     public function deshacerPago(Preinscripcion $preinscripcion){
-        // 1.- Sacar datos de la preinscripcion
-        //$preinscripcion = new Preinscripcion();
-        //$preinscripcion = Preinscripcion::find($id);
-
-        // 2.- Actualizar campos de estado y fecha de pago.
         $preinscripcion->estado = 'Pendiente de Pago';
         $preinscripcion->f_pago = null;
-
         $preinscripcion->save();
 
-        // Borrar el pago de la preinscripción
-        $tipopagopre_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
-        $pago = Pago::where('miembro_id', $preinscripcion->miembro_id)->
-                where('temporada_id', $preinscripcion->temporada_id)->
-                where('tipospago_id', $tipopagopre_id)->first();
+        $pago = $this->queryPagosPreinscripcion($preinscripcion)
+            ->whereNotNull('f_pago')
+            ->where('f_pago', '!=', '')
+            ->orderBy('f_vencimiento')
+            ->orderBy('id')
+            ->first();
 
-        $pago->delete();
+        if ($pago) {
+            $pago->marcarComoPendiente();
+            $pago->save();
+        }
 
         return redirect()->back()->with('status', 'Pago deshecho correctamente');
     }
@@ -426,6 +630,8 @@ class PreinscripcionController extends Controller
             }
         }
 
+        $this->validarPreinscripcion($request);
+
         // Generar nùmero de preinscripción
         $nPreinscripcion = time();
 
@@ -442,15 +648,15 @@ class PreinscripcionController extends Controller
         $miembro->nombre = $request->input('nombre');
         $miembro->apellido1 = $request->input('apellido1');
         $miembro->apellido2 = $request->input('apellido2');
-        $miembro->centroEducativo = $request->input('centroEducativo');
+        $miembro->centroEducativo = $this->normalizarCampoOpcional($request->input('centroEducativo'));
         $miembro->nomSerigrafia = $request->input('nomSerigrafia');
         $miembro->dorsal = $request->input('dorsal');
         $miembro->domicilio = $request->input('domicilio');
         $miembro->c_postal = $request->input('c_postal');
         $miembro->provincia = $request->input('provincia');
         $miembro->localidad = $request->input('localidad');
-        $miembro->nombreR1 = $request->input('nombreR1');
-        $miembro->apellido1R1 = $request->input('apellido1R1');
+        $miembro->nombreR1 = $this->normalizarCampoOpcional($request->input('nombreR1'));
+        $miembro->apellido1R1 = $this->normalizarCampoOpcional($request->input('apellido1R1'));
         $miembro->apellido2R1 = $request->input('apellido2R1');
         $miembro->nombreR2 = $request->input('nombreR2');
         $miembro->apellido1R2 = $request->input('apellido1R2');
@@ -462,10 +668,9 @@ class PreinscripcionController extends Controller
         $miembro->miembro_id = $request->input('miembro_id');
 
         $miembro->temporada_id = Temporada::actual()->id;
-        $miembro->estado = 'Pagado';
+        $miembro->estado = 'Pendiente de Pago';
 
         $miembro->f_preinscripcion = date('Y-m-d', time() );
-        $miembro->f_pago = date('Y-m-d', time() );
         $miembro->nPreinscripcion = $nPreinscripcion;
 
         $miembro->obsEnfermedad = $request->input('obsEnfermedad');
@@ -476,61 +681,14 @@ class PreinscripcionController extends Controller
         $miembro->autorizacion = $request->input('autorizacion');
         $miembro->normas = 'S';
 
-        $temporada = Temporada::find($miembro->temporada_id);
-        $miembro->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
+        $this->aplicarModalidadCuota($miembro, $request);
 
-        // Importe de la cuota
-        $vPago = $request->input('importePago');
-        if ($vPago == 0){
-            // Ver la cuota correspondiente
-            $vPago = $miembro->cuota();
-        }
-        else {
-            $vPago = $miembro->cuota()/2;
-        }
+        DB::transaction(function () use ($miembro) {
+            $miembro->save();
+            $this->ensureMiembroParaPagos($miembro);
+            $this->crearPagosPreinscripcion($miembro);
+        });
 
-        $miembro->importePago = $vPago;
-
-        $miembro->save();
-
-        // añadimos el pago
-        $pago = new Pago();
-
-        $pago->importe = $vPago;
-        $pago->temporada_id = $miembro->temporada_id;
-        $pago->miembro_id = $miembro->miembro_id;
-        $pago->nRecibo = $miembro->nRecibo;
-        $pago->tipospago_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
-        $pago->f_pago = date('Y-m-d', strtotime($miembro->f_pago) );
-
-        $pago->save();
-
-        $miembro->save();
-
-        $preinscripcion = $miembro;
-
-        if (!is_null($request->input('enviar'))){
-
-            // Envío de correo con el recibo adjunto
-            $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
-
-            $for = $miembro->email;
-            $nPreinscripcion = $miembro->nPreinscripcion;
-
-            Mail::send('emails.preinsPagada', compact('nPreinscripcion'), function($msj) use ($for, $pdf){
-                $msj->subject('Recibo del pago de la preinscripción');
-                $msj->to($for);
-                $msj->attachData($pdf->output(), 'Recibo.pdf');
-            });
-        }
-
-/*         if (!is_null($request->input('imprimir'))){
-            // Mostrar el pdf del recibo.
-            $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
-            return $pdf->download('Recibo.pdf');
-
-        }
- */
         return redirect()->route('miembros')->with('status', 'Preinscripción realizada correctamente');
     }
 

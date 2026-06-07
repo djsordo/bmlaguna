@@ -10,7 +10,10 @@ use BMLaguna\Temporada;
 
 class Pago extends Model
 {
-    protected $fillable = ['miembro_id', 'f_pago', 'importe', 'tipospago_id', 'temporada_id', 'nRecibo'];
+    const ESTADO_PENDIENTE = 'Pendiente';
+    const ESTADO_PAGADO = 'Pagado';
+
+    protected $fillable = ['miembro_id', 'f_pago', 'f_vencimiento', 'importe', 'tipospago_id', 'temporada_id', 'nRecibo', 'estado'];
 
     /**
      * Pagos efectivamente cobrados (f_pago informado). Sin fecha = pendiente, no cuenta como pagado.
@@ -22,7 +25,20 @@ class Pago extends Model
 
     public function esRealizado()
     {
-        return $this->f_pago !== null && $this->f_pago !== '';
+        return $this->estado === self::ESTADO_PAGADO
+            || ($this->f_pago !== null && $this->f_pago !== '');
+    }
+
+    public function marcarComoPagado($fecha = null)
+    {
+        $this->f_pago = $fecha ?: date('Y-m-d');
+        $this->estado = self::ESTADO_PAGADO;
+    }
+
+    public function marcarComoPendiente()
+    {
+        $this->f_pago = null;
+        $this->estado = self::ESTADO_PENDIENTE;
     }
 
     public function tipospago(){

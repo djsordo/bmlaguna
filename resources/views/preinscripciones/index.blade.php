@@ -169,8 +169,11 @@
                                 <span id="f_pago" class="black-text">{{ (!is_null($preinscripcion->f_pago)) ? date('d-m-Y', strtotime($preinscripcion->f_pago) ) : ' - ' }}</span>
                             </div>
                             <div class="col s2">
-                                <label for="importePago">Importe:</label><br>
+                                <label for="importePago">Importe (1.er plazo):</label><br>
                                 <span id="importePago" class="black-text">{{ (!is_null($preinscripcion->importePago)) ? $preinscripcion->importePago : ' - ' }}</span>
+                                @if (!is_null($preinscripcion->modalidad_cuotas))
+                                    <br><span class="grey-text">{{ $preinscripcion->modalidad_cuotas }} {{ $preinscripcion->modalidad_cuotas == 1 ? 'cuota' : 'cuotas' }}</span>
+                                @endif
                             </div>
                             <div class="col s2">
                                 <label for="nif">N.I.F. :</label><br>

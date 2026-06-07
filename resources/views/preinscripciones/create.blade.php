@@ -1,9 +1,13 @@
-
-    @extends('layouts.app')
-
-    {{-- @extends('layouts.appSinBarra') --}}
+    @extends(empty($quitaBarra) ? 'layouts.app' : 'layouts.appSinBarra')
 
 @section('content')
+
+@php
+    $requiereCamposMenor = true;
+    if (!is_null($miembro) && !empty($miembro->f_nacimiento)) {
+        $requiereCamposMenor = \Carbon\Carbon::parse($miembro->f_nacimiento)->age < 18;
+    }
+@endphp
 
 <script src='/js/miembros.js'></script>
 
@@ -20,10 +24,6 @@
         <h3>Formulario de Preinscripción</h3>
         <h4>Temporada {{$temporada->descripcion}}</h4>
     </div>
-{{--     <div class="col s12">
-        <h3 class="red">¡¡¡ Atención !!! Nos hemos quedado sin plazas para los años 2006-2007 (categoría cadete) FEMENINO, ni para los años 2008-2009 (categoría infantil) FEMENINO. No podremos tramitar el alta este año de más jugadoras de esas edades.</h3>
-        <h4 class="red">Aunque desde esta página quede como preinscrita, no será así.</h4>
-    </div> --}}
 </div>
 
     <div class="section">
@@ -70,8 +70,8 @@
                             <label for="apellido2">Segundo apellido:</label>
                         </div>
                         <div class="input-field col s6">
-                            <input type="text"id="centroEducativo" name="centroEducativo" class="validate" required value="{{ (!is_null($miembro)) ? $miembro->centroEducativo : '' }}">
-                            <label for="centroEducativo">Centro Educativo: *</label>
+                            <input type="text"id="centroEducativo" name="centroEducativo" class="validate js-campo-menor-edad" @if($requiereCamposMenor) required @endif value="{{ (!is_null($miembro)) ? $miembro->centroEducativo : '' }}">
+                            <label for="centroEducativo" data-label="Centro Educativo:">Centro Educativo:@if($requiereCamposMenor) *@endif</label>
                         </div>
                         <div class="input-field col s4">
                             <input type="text"id="nomSerigrafia" name="nomSerigrafia" class="validate" value="{{ (!is_null($miembro)) ? $miembro->nomSerigrafia : '' }}">
@@ -107,13 +107,13 @@
                         <div class="flow-text">Padre/Madre o Tutor</div>
                         <div class="valign-wrapper">
                             <div class="input-field col s4">
-                                <input type="text"id="nombreR1" name="nombreR1" class="validate" required value="{{ (!is_null($resp1)) ? $resp1->nombre : '' }}">
-                                <label for="nombreR1">Nombre: *</label>
+                                <input type="text"id="nombreR1" name="nombreR1" class="validate js-campo-menor-edad" @if($requiereCamposMenor) required @endif value="{{ (!is_null($resp1)) ? $resp1->nombre : '' }}">
+                                <label for="nombreR1" data-label="Nombre:">Nombre:@if($requiereCamposMenor) *@endif</label>
                             </div>
 
                             <div class="input-field col s4">
-                                <input type="text"id="apellido1R1" name="apellido1R1" class="validate" required value="{{ (!is_null($resp1)) ? $resp1->apellido1 : '' }}">
-                                <label for="apellido1R1">Primer apellido: *</label>
+                                <input type="text"id="apellido1R1" name="apellido1R1" class="validate js-campo-menor-edad" @if($requiereCamposMenor) required @endif value="{{ (!is_null($resp1)) ? $resp1->apellido1 : '' }}">
+                                <label for="apellido1R1" data-label="Primer apellido:">Primer apellido:@if($requiereCamposMenor) *@endif</label>
                             </div>
                             <div class="input-field col s4">
                                 <input type="text"id="apellido2R1" name="apellido2R1" class="validate" value="{{ (!is_null($resp1)) ? $resp1->apellido2 : '' }}">
@@ -240,44 +240,7 @@
                 </div>
 
 
-                <div class="row card-panel">
-                    <div class="row section">
-                        <span class="card-title col s12"><strong class="flow-text">OPCIONES DE PAGO</strong></span>
-                    </div>
-
-                    <div class="col s12">
-                        <div class="col s10">
-                            Pago de la mitad de la cuota (Varía según categoría, ver tabla de coutas abajo)
-                        </div>
-                        <div class="col s2">
-                            <label>
-                                <input name="importePago" type="radio" value="80" required/>
-                                <span></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col s12">
-                        <div class="col s10">
-                            Pago de toda la inscripción (ver tabla de cuotas abajo)
-                        </div>
-                        <div class="col s2">
-                            <label>
-                                <input name="importePago" type="radio" value="0" required/>
-                                <span></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="col s12">
-                        <p align="justify">Cuotas para la temporada {{$temporada->descripcion}} en este <a href="{{ route('pdf-cuotas', compact('temporada')) }}">enlace</a>.</p></br>
-                        <p align="justify">AVISO - Si se elige como forma de pago la mitad de la cuota, el total de la misma deberá ser abonada antes del 15 de Noviembre de 2022. El impago de dicha cuota en el plazo anteriormente citado provocará, salvo imprevistos debidamente comunicados a la Junta Directiva, el bloqueo de la ficha federativa durante el resto de la temporada, o hasta que se satisfaga el pago.</p></br>
-                    </div>
-
-                    <div class="col s12">
-                        <p align="justify">AVISO DE CONFIDENCIALIDAD: según lo dispuesto en la legislación en materia de protección de datos y por el RGPD UE 2016/679 de la LSSI (34/2002), garantizamos la confidencialidad de sus datos los cuales serán incluidos en un fichero de nuestra propiedad. Usted podrá ejercitar sus derechos de acceso, rectificación, cancelación o supresión, oposición, limitación del tratamiento o portabilidad de sus datos comunicándose por correo electrónico a <b>bmlagunadircc@gmail.com</b>. Igualmente tiene usted derecho a presentar una reclamación ante la Agencia de Protección de Datos.</p>
-                        <p align="justify">Así mismo, les pedimos que lean las <a href="/docsInscripcion/Normas.pdf" target="_blank">normas del club</a>, para poder aceptarlas posteriormente.</p>
-                    </div>
-                </div>
+                @include('preinscripciones.componentes.opcionesPago')
 
                 <input type="text" id="miembro_id" name="miembro_id" value="{{ (!is_null($miembro)) ? $miembro->id : '' }}" style="display:none">
 
@@ -295,6 +258,8 @@
         var instances = M.FormSelect.init(elems);
     }   );
 </script>
+
+@include('preinscripciones.componentes.camposMenorEdad')
 
 @endsection
 

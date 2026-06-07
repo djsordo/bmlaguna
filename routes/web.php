@@ -17,6 +17,18 @@ Route::get('/', function () {
 
 Auth::routes();
 
+// Preinscripción pública por enlace del correo (URL firmada + envío del formulario)
+Route::get('crear-preins/{miembro_id}', 'PreinscripcionController@createPublic')
+    ->name('crear-preins')
+    ->middleware(['signed', 'throttle:30,1']);
+
+Route::post('preinscripciones', 'PreinscripcionController@store')
+    ->middleware('throttle:30,1');
+
+Route::get('/pdf-cuotas/{temporada}', 'PdfController@cuotas')
+    ->name('pdf-cuotas')
+    ->middleware('throttle:30,1');
+
 Route::middleware('auth')->group(function () {
 
     // PAGOS
@@ -71,6 +83,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/equipaciones', 'EquipacionController@index')->name('equipaciones');
 
+    Route::get('/temporada-cambio', 'TemporadaCambioController@index')->name('temporada-cambio');
+    Route::post('/temporada-cambio/avanzar', 'TemporadaCambioController@avanzar')->name('temporada-cambio.avanzar');
+    Route::post('/temporada-cambio/revertir', 'TemporadaCambioController@revertir')->name('temporada-cambio.revertir');
+
     Route::get('/documentos', 'DocumentoController@index')->name('documentos');
 
     Route::get('/equipacionesMiembro/{miembro_id}', 'MiembroController@equipacionesMiembro')->name('equipacionesMiembro');
@@ -103,7 +119,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/preinsGenerica/{id}', 'MailController@preinsGenerica')->name('preinsGenerica');
     Route::get('/insGenerica/{id}', 'MailController@insGenerica')->name('insGenerica');
 
-    Route::resource('preinscripciones', 'PreinscripcionController');
+    Route::resource('preinscripciones', 'PreinscripcionController')->except(['store']);
 
     Route::get('/preinscripciones', 'PreinscripcionController@index')->name('preinscripciones');
     Route::post('/preinscripcionOficina', 'PreinscripcionController@oficinaStore');
@@ -114,8 +130,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/pdf-preinscripcionPagada/{preinscripcion}', 'PdfController@preinscripcionPagada')->name('pdf-preinscripcionPagada');
 
-    Route::get('crear-preins/{miembro_id}', ['as' => 'crear-preins', 'uses' => 'PreinscripcionController@create']);
-
     Route::get('preins-oficina/{miembro}', ['as' => 'preins-oficina', 'uses' => 'PreinscripcionController@preinsOficinaCreate']);
 
     Route::get('/miembros/baja/{miembro}', 'MiembroController@baja')->name('miembroBaja');
@@ -123,7 +137,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/pdf-certFedereco/{miembro}', 'PdfController@certFedeReco')->name('pdf-certFedeReco');
     Route::get('/pdf-certFederecoEquipo/{equipo}', 'PdfController@certFedeRecoEquipo')->name('pdf-certFedeRecoEquipo');
-    Route::get('/pdf-cuotas/{temporada}', 'PdfController@cuotas')->name('pdf-cuotas');
     Route::get('/pdf-reciboPago/{pago_id}/{cuota}/{pagado}', 'PdfController@reciboPago')->name('pdf-reciboPago');
 
     //Correo de envío de un recibo

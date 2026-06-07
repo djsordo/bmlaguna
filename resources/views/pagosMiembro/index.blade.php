@@ -124,8 +124,9 @@
                         <i class="material-icons">euro_symbol</i>
                         <span class="col s3"><b>Fecha de pago</b></span>
                         <span class="col s3"><b>Concepto</b></span>
+                        <span class="col s2"><b>Vencimiento</b></span>
                         <span class="col s2 right-align"><b>Importe</b></span>
-                        <span class="col s3 center"><b>Recibo</b></span>
+                        <span class="col s1 center"><b>Recibo</b></span>
                         <span class="col s1 center"><b>Cobrar</b></span>
                     </div>
                 </li>
@@ -146,8 +147,15 @@
                             @endif
                         </span>
                         <span class="col s3">{{$pago->tipospago->descripcion}}</span>
+                        <span class="col s2">
+                            @if($pago->f_vencimiento)
+                                {{ date('d-m-Y', strtotime($pago->f_vencimiento)) }}
+                            @else
+                                <span class="grey-text">—</span>
+                            @endif
+                        </span>
                         <span class="col s2  right-align">{{$pago->importe}}</span>
-                        <span class="col s3 center">
+                        <span class="col s1 center">
                             @if($pago->esRealizado())
                                 <a href="/pdf-reciboPago/{{$pago->id}}/{{$cuota}}/{{$pago->sumPagadoParcial()}}"><i class="material-icons tooltipped" data-tooltip="Imprimir recibo {{$pago->nRecibo}}">print</i></a>
                             @else

@@ -14,6 +14,7 @@ use Dompdf\Options;
 
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade as PDF;
 
 
@@ -113,7 +114,13 @@ class PdfController extends Controller
     }
 
     public function cuotas(Temporada $temporada){
-        //$miembro = Miembro::find($miembro_id);
+        if (! Auth::check()) {
+            $temporadaActual = Temporada::actual();
+            if (is_null($temporadaActual) || $temporadaActual->id !== $temporada->id) {
+                abort(403);
+            }
+        }
+
         $categorias = Categoria::orderBy('orden', 'ASC')->get();
 //dd($categorias);
         $pdf = PDF::loadview('pdf.cuotas', compact('temporada', 'categorias'))->setPaper('a4', 'portrait');

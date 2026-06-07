@@ -3,6 +3,7 @@
 namespace BMLaguna\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Barryvdh\DomPDF\Facade as PDF;
 use Mail;
 use Session;
@@ -17,6 +18,18 @@ use BMLaguna\Pago;
 
 class MailController extends Controller
 {
+    /**
+     * Enlace firmado al formulario público de preinscripción (válido 4 meses).
+     */
+    private function enlacePreinscripcion($miembro_id)
+    {
+        return URL::signedRoute(
+            'crear-preins',
+            ['miembro_id' => $miembro_id],
+            now()->addMonths(4)
+        );
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -175,9 +188,10 @@ class MailController extends Controller
         }
 
         $for = $email->email;
+        $enlacePreins = $this->enlacePreinscripcion($miembro_id);
 
         try {
-            Mail::send('emails.preinsAntiguos', compact('miembro_id'), function($msj) use ($for){
+            Mail::send('emails.preinsAntiguos', compact('miembro_id', 'enlacePreins'), function($msj) use ($for){
                 $msj->subject('Preinscripcion Club Balonmano Laguna');
                 $msj->to($for);
             });
@@ -245,8 +259,9 @@ class MailController extends Controller
 
                 if (!is_null($for)){
                     try {
+                        $enlacePreins = $this->enlacePreinscripcion($miembro_id);
                         // Envío del mensaje
-                        Mail::send('emails.preinsAntiguos', compact('miembro_id'), function($msj) use ($for){
+                        Mail::send('emails.preinsAntiguos', compact('miembro_id', 'enlacePreins'), function($msj) use ($for){
                             $msj->subject('Preinscripcion Club Balonmano Laguna');
                             $msj->to($for);
                         });

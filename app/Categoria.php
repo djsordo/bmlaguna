@@ -178,4 +178,33 @@ class Categoria extends Model
         return [$annoPrimero, $annoUltimo];
     }
 
+    public function cuotaTresRecibosTexto()
+    {
+        return $this->precio_3c1.'+'.$this->precio_3c2.'+'.$this->precio_3c3;
+    }
+
+    public function cuotaDosRecibosTexto()
+    {
+        return $this->precio_2c1.'+'.$this->precio_2c2;
+    }
+
+    /**
+     * Fecha de plazo para textos del PDF (d de mes de YYYY). Devuelve null si no hay fecha.
+     */
+    public static function formatearPlazo($fecha)
+    {
+        if (empty($fecha)) {
+            return null;
+        }
+
+        $meses = [
+            1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril',
+            5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto',
+            9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre',
+        ];
+        $fecha = \Carbon\Carbon::parse($fecha);
+
+        return $fecha->format('j').' de '.$meses[(int) $fecha->format('n')].' de '.$fecha->format('Y');
+    }
+
 }
