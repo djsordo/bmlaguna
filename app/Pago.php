@@ -20,7 +20,12 @@ class Pago extends Model
      */
     public function scopeRealizados($query)
     {
-        return $query->whereNotNull('f_pago')->where('f_pago', '!=', '');
+        return $query->whereNotNull('f_pago');
+    }
+
+    public function scopePendientes($query)
+    {
+        return $query->whereNull('f_pago');
     }
 
     public function esRealizado()
@@ -59,7 +64,6 @@ class Pago extends Model
                 ->where('miembro_id', $this->miembro_id)
                 ->where('temporada_id', $this->temporada_id)
                 ->whereNotNull('f_pago')
-                ->where('f_pago', '!=', '')
                 ->sum('importe');
     }
 
@@ -69,10 +73,9 @@ class Pago extends Model
             ->where('miembro_id', $this->miembro_id)
             ->where('temporada_id', $this->temporada_id)
             ->whereNotNull('f_pago')
-            ->where('f_pago', '!=', '')
             ->where('id', '<=', $this->id);
 
-        if ($this->f_pago !== null && $this->f_pago !== '') {
+        if ($this->f_pago !== null) {
             $q->where('f_pago', '<=', $this->f_pago);
         }
 

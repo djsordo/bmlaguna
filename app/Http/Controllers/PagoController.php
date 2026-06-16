@@ -143,7 +143,6 @@ class PagoController extends Controller
 
         $totalPagos = (clone $pagos)
             ->whereNotNull('pagos.f_pago')
-            ->where('pagos.f_pago', '!=', '')
             ->sum('pagos.importe');
 
         $pagos = $pagos->select('pagos.miembro_id', 'pagos.temporada_id')->groupBy('pagos.miembro_id', 'pagos.temporada_id');

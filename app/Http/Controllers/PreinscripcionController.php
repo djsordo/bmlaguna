@@ -559,9 +559,7 @@ class PreinscripcionController extends Controller
             }
 
             $pago = $this->queryPagosPreinscripcion($preinscripcion)
-                ->where(function ($q) {
-                    $q->whereNull('f_pago')->orWhere('f_pago', '');
-                })
+                ->whereNull('f_pago')
                 ->orderBy('f_vencimiento')
                 ->orderBy('id')
                 ->first();
@@ -645,7 +643,7 @@ class PreinscripcionController extends Controller
             });
 
             // #region agent log
-            $this->debugPagadoLog('F', 'PreinscripcionController::pagado', 'after_mail_success', []);
+            $this->debugPagadoLog('F', 'PreinscripcionController::pagado', 'after_mail_success', [], 'post-fix');
             // #endregion
 
             return redirect()->back()->with('status', 'Recibo enviado correctamente');
@@ -670,7 +668,6 @@ class PreinscripcionController extends Controller
 
         $pago = $this->queryPagosPreinscripcion($preinscripcion)
             ->whereNotNull('f_pago')
-            ->where('f_pago', '!=', '')
             ->orderBy('f_vencimiento')
             ->orderBy('id')
             ->first();
