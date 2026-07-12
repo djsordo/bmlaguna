@@ -751,6 +751,8 @@ class Miembro extends Model
 
         $miembro->save();
 
+        $miembro->asegurarFuncionClubJugadorEnFicha();
+
         //dd($miembro->id);
         return $miembro;
     }

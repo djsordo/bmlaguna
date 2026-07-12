@@ -32,23 +32,6 @@ class PreinscripcionController extends Controller
     const PREINS_SESSION_OK_AT = 'preins_public_ok_at';
     const PREINS_SESSION_HOURS = 4;
 
-    // #region agent log
-    private function debugPagadoLog(string $hypothesisId, string $location, string $message, array $data = [], string $runId = 'pre-fix'): void
-    {
-        $payload = json_encode([
-            'sessionId' => '454c56',
-            'runId' => $runId,
-            'hypothesisId' => $hypothesisId,
-            'location' => $location,
-            'message' => $message,
-            'data' => $data,
-            'timestamp' => (int) round(microtime(true) * 1000),
-        ]);
-
-        @file_put_contents(base_path('debug-454c56.log'), $payload.PHP_EOL, FILE_APPEND);
-    }
-    // #endregion
-
     /**
      * Display a listing of the resource.
      *
@@ -270,13 +253,16 @@ class PreinscripcionController extends Controller
 
     private function ensureMiembroParaPagos(Preinscripcion $preinscripcion)
     {
-        if (! is_null($preinscripcion->miembro_id)) {
-            return;
+        if (is_null($preinscripcion->miembro_id)) {
+            $miembro = Miembro::nuevo($preinscripcion);
+            $preinscripcion->miembro_id = $miembro->id;
+            $preinscripcion->save();
+        } else {
+            $miembro = Miembro::find($preinscripcion->miembro_id);
+            if ($miembro) {
+                $miembro->asegurarFuncionClubJugadorEnFicha();
+            }
         }
-
-        $miembro = Miembro::nuevo($preinscripcion);
-        $preinscripcion->miembro_id = $miembro->id;
-        $preinscripcion->save();
     }
 
     private function queryPagosPreinscripcion(Preinscripcion $preinscripcion)
@@ -524,141 +510,59 @@ class PreinscripcionController extends Controller
 
     /* Esta función pasa al estado pagado una preinscripción */
     public function pagado(Preinscripcion $preinscripcion){
-        try {
-            // #region agent log
-            $this->debugPagadoLog('C', 'PreinscripcionController::pagado', 'entry', [
-                'preinscripcion_id' => $preinscripcion->id,
-                'modalidad_cuotas' => $preinscripcion->modalidad_cuotas,
-                'miembro_id' => $preinscripcion->miembro_id,
-                'tipospago_accent_id' => Tipospago::where('descripcion', 'Preinscripción')->value('id'),
-                'tipospago_no_accent_id' => Tipospago::where('descripcion', 'Preinscripcion')->value('id'),
-            ]);
-            // #endregion
+        $this->ensureMiembroParaPagos($preinscripcion);
 
-            $this->ensureMiembroParaPagos($preinscripcion);
-
-            // #region agent log
-            $this->debugPagadoLog('A', 'PreinscripcionController::pagado', 'after_ensure_miembro', [
-                'miembro_id' => $preinscripcion->miembro_id,
-            ]);
-            // #endregion
-
-            if ($preinscripcion->modalidad_cuotas) {
-                // #region agent log
-                $this->debugPagadoLog('B', 'PreinscripcionController::pagado', 'before_crear_pagos', [
-                    'modalidad_cuotas' => $preinscripcion->modalidad_cuotas,
-                    'tipos_modalidad_count' => Tipospago::tiposPorModalidad($preinscripcion->modalidad_cuotas)->count(),
-                ]);
-                // #endregion
-
-                $this->crearPagosPreinscripcion($preinscripcion);
-
-                // #region agent log
-                $this->debugPagadoLog('B', 'PreinscripcionController::pagado', 'after_crear_pagos', []);
-                // #endregion
-            }
-
-            $pago = $this->queryPagosPreinscripcion($preinscripcion)
-                ->whereNull('f_pago')
-                ->orderBy('f_vencimiento')
-                ->orderBy('id')
-                ->first();
-
-            // #region agent log
-            $this->debugPagadoLog('D', 'PreinscripcionController::pagado', 'pago_query_result', [
-                'pago_id' => $pago ? $pago->id : null,
-                'legacy_branch' => is_null($pago) && is_null($preinscripcion->modalidad_cuotas),
-            ]);
-            // #endregion
-
-            if (is_null($pago) && is_null($preinscripcion->modalidad_cuotas)) {
-                $legacyTipo = Tipospago::where('descripcion', 'Preinscripción')->first();
-
-                // #region agent log
-                $this->debugPagadoLog('C', 'PreinscripcionController::pagado', 'legacy_tipospago_lookup', [
-                    'found_accent' => ! is_null($legacyTipo),
-                    'legacy_id' => $legacyTipo ? $legacyTipo->id : null,
-                ]);
-                // #endregion
-
-                $temporada = Temporada::find($preinscripcion->temporada_id);
-                $preinscripcion->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
-
-                $pago = new Pago();
-                $pago->importe = $preinscripcion->importePago;
-                $pago->temporada_id = $preinscripcion->temporada_id;
-                $pago->miembro_id = $preinscripcion->miembro_id;
-                $pago->nRecibo = $preinscripcion->nRecibo;
-                $pago->tipospago_id = $legacyTipo->id;
-                $pago->marcarComoPagado();
-                $pago->save();
-            } elseif (is_null($pago)) {
-                return redirect()->back()->withErrors(['No hay pagos pendientes para esta preinscripción.']);
-            } else {
-                $temporada = Temporada::find($preinscripcion->temporada_id);
-                if (empty($pago->nRecibo)) {
-                    $pago->nRecibo = $this->generarNumeroRecibo($temporada);
-                }
-                $pago->marcarComoPagado();
-                $pago->save();
-                $preinscripcion->nRecibo = $pago->nRecibo;
-            }
-
-            // #region agent log
-            $this->debugPagadoLog('D', 'PreinscripcionController::pagado', 'after_pago_save', [
-                'pago_id' => $pago->id,
-                'nRecibo' => $preinscripcion->nRecibo,
-            ]);
-            // #endregion
-
-            $preinscripcion->estado = 'Pagado';
-            $preinscripcion->f_pago = date('Y-m-d');
-            $preinscripcion->save();
-
-            // #region agent log
-            $this->debugPagadoLog('E', 'PreinscripcionController::pagado', 'before_pdf', []);
-            // #endregion
-
-            $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
-
-            // #region agent log
-            $this->debugPagadoLog('E', 'PreinscripcionController::pagado', 'after_pdf', []);
-            // #endregion
-
-            // Envío de correo con el recibo adjunto
-            $for = $preinscripcion->email;
-            $nPreinscripcion = $preinscripcion->nPreinscripcion;
-
-            // #region agent log
-            $this->debugPagadoLog('F', 'PreinscripcionController::pagado', 'before_mail', [
-                'email' => $for,
-                'mail_driver' => config('mail.driver'),
-            ]);
-            // #endregion
-
-            Mail::send('emails.preinsPagada', compact('nPreinscripcion'), function($msj) use ($for, $pdf){
-                $msj->subject('Preinscripción Club Balonmano Laguna');
-                $msj->to($for);
-                $msj->attachData($pdf->output(), 'Recibo.pdf');
-            });
-
-            // #region agent log
-            $this->debugPagadoLog('F', 'PreinscripcionController::pagado', 'after_mail_success', [], 'post-fix');
-            // #endregion
-
-            return redirect()->back()->with('status', 'Recibo enviado correctamente');
-        } catch (\Throwable $e) {
-            // #region agent log
-            $this->debugPagadoLog('ALL', 'PreinscripcionController::pagado', 'exception', [
-                'class' => get_class($e),
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-            // #endregion
-
-            throw $e;
+        if ($preinscripcion->modalidad_cuotas) {
+            $this->crearPagosPreinscripcion($preinscripcion);
         }
+
+        $pago = $this->queryPagosPreinscripcion($preinscripcion)
+            ->whereNull('f_pago')
+            ->orderBy('f_vencimiento')
+            ->orderBy('id')
+            ->first();
+
+        if (is_null($pago) && is_null($preinscripcion->modalidad_cuotas)) {
+            $temporada = Temporada::find($preinscripcion->temporada_id);
+            $preinscripcion->nRecibo = 'R'.$temporada->temporada.'-'.Contador_recibo::sumar($temporada);
+
+            $pago = new Pago();
+            $pago->importe = $preinscripcion->importePago;
+            $pago->temporada_id = $preinscripcion->temporada_id;
+            $pago->miembro_id = $preinscripcion->miembro_id;
+            $pago->nRecibo = $preinscripcion->nRecibo;
+            $pago->tipospago_id = Tipospago::where('descripcion', 'Preinscripción')->first()->id;
+            $pago->marcarComoPagado();
+            $pago->save();
+        } elseif (is_null($pago)) {
+            return redirect()->back()->withErrors(['No hay pagos pendientes para esta preinscripción.']);
+        } else {
+            $temporada = Temporada::find($preinscripcion->temporada_id);
+            if (empty($pago->nRecibo)) {
+                $pago->nRecibo = $this->generarNumeroRecibo($temporada);
+            }
+            $pago->marcarComoPagado();
+            $pago->save();
+            $preinscripcion->nRecibo = $pago->nRecibo;
+        }
+
+        $preinscripcion->estado = 'Pagado';
+        $preinscripcion->f_pago = date('Y-m-d');
+        $preinscripcion->save();
+
+        $pdf = PDF::loadview('pdf.preinscripcionPagada', compact('preinscripcion'))->setPaper('a5', 'landscape');
+
+        // Envío de correo con el recibo adjunto
+        $for = $preinscripcion->email;
+        $nPreinscripcion = $preinscripcion->nPreinscripcion;
+
+        Mail::send('emails.preinsPagada', compact('nPreinscripcion'), function($msj) use ($for, $pdf){
+            $msj->subject('Preinscripción Club Balonmano Laguna');
+            $msj->to($for);
+            $msj->attachData($pdf->output(), 'Recibo.pdf');
+        });
+
+        return redirect()->back()->with('status', 'Recibo enviado correctamente');
     }
 
     public function deshacerPago(Preinscripcion $preinscripcion){
